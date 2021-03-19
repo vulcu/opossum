@@ -34,14 +34,6 @@ const PROGMEM uint16_t dBCoefTable[25] =
   6492, 6876, 7284, 7715, 8173
 };
 
-// min, max, and default 'on' LED brightness values for each switch LED
-uint8_t S1_PWM_MIN = 20;                // S1 minimum PWM level
-uint8_t S1_PWM_MAX = 255;               // S1 maximum PWM level
-uint8_t S1_PWM_DEF = 200;               // S1 default PWM level
-uint8_t S2_PWM_MIN = 20;                // S2 minimum PWM level
-uint8_t S2_PWM_MAX = 255;               // S2 maximum PWM level
-uint8_t S2_PWM_DEF = 200;               // S2 default PWM level
-
 // keep track of PWM level and direction for each switch LED
 bool     S1_PWM_DIR, S2_PWM_DIR = HIGH;  // HIGH = rising, LOW = falling
 uint16_t S1_PWM_VAL, S2_PWM_VAL = 0;     // PWM analogWrite value
