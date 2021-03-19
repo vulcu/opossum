@@ -61,19 +61,6 @@ volatile uint8_t S2ButtonPressCount = 0;
 volatile uint32_t S2DebounceStart, S2DebounceStop = 0;
 
 
-// check if the BM62 programming pin is pulled low
-void isProgramMode(void) {
-  if (!digitalRead(PRGM_SENSE_N)) {
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);  // set sleep mode to power down
-    cli();                                // globally disable interrupts
-    sleep_enable();                       // set sleep bit
-    sleep_bod_disable();                  // disable brown out detection
-    sleep_cpu();                          // go to sleep
-    
-    // interrupts are disabled, mcu will NOT wake up until next power cycle!
-  }
-}
-
 
 // wait for BM62 to indicate a successful A2DP connection
 void waitForConnection(void) {
