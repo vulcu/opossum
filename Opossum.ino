@@ -291,7 +291,7 @@ void loop() {
   uint32_t currentMillis = millis();
   
   // read audio levels from MSGEQ7 only if enough time has passed
-  if (currentMillis - previousMillis >= audioReadInterval) {
+  if (currentMillis - previousMillis >= AUDIO_READ_INTERVAL) {
     // save the time of most recent transmission
     previousMillis = currentMillis;
 
