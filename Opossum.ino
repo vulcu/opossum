@@ -34,27 +34,6 @@ const PROGMEM uint16_t dBCoefTable[25] =
   6492, 6876, 7284, 7715, 8173
 };
 
-// MAX9744 absolute gain levels (dB), multiplied
-// by 10x to allow PROGMEM storage as int16_t
-const PROGMEM int16_t MAX9744GainLevel[64] = 
-{
-    95,    88,    82,    76,
-    70,    65,    59,    54,
-    49,    44,    39,    34,
-    29,    24,    20,    16,
-    12,    05,   -05,   -19,
-   -34,   -50,   -60,   -71,
-   -89,   -99,  -109,  -120,
-  -131,  -144,  -154,  -164,
-  -175,  -197,  -216,  -235,
-  -252,  -272,  -298,  -315,
-  -334,  -360,  -376,  -396,
-  -421,  -437,  -456,  -481,
-  -506,  -542,  -567,  -602,
-  -627,  -662,  -687,  -722,
-  -747,  -783,  -808,  -843,
-  -868,  -903,  -929, -1095
-};
 
 // BM62 UART commands for media playback control
 const uint8_t BM62_Play[7] =
