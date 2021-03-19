@@ -324,6 +324,10 @@ void loop() {
       Serial.print(" ");
       Serial.print(levelOut);
       Serial.print(" ");
+      for(uint8_t k = 0; k < 2; k++) {
+        Serial.print(volumeRange[k]);
+        Serial.print(" ");
+      }
       for(uint8_t k = 0; k < 25; k++) {
         Serial.print(dBLevs[k]);
         Serial.print(" ");
