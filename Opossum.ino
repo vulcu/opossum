@@ -48,6 +48,7 @@ uint16_t S1_PWM_VAL, S2_PWM_VAL = 0;     // PWM analogWrite value
 
 // buffer index, volume, filtered volume, base level, present level
 uint8_t  bufferIndx = 0;
+uint8_t volumeRange[2];
 int16_t  vol, volOut = 0;
 uint16_t zeroSignal, baseLevel, levelOut = 251;
 
