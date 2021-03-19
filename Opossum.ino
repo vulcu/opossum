@@ -217,7 +217,7 @@ void setup() {
   
   // determine if the BM62 is being programmed; if so, take a nap
   pinMode(PRGM_SENSE_N, INPUT);
-  isProgramMode();
+  BM62_isProgramMode();
   
   // initialize remaining digital pin modes
   pinMode(S2_INT,     INPUT);
