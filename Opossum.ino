@@ -126,51 +126,6 @@ void waitForConnection(void) {
 }
 
 
-// read back spectral band data from the MSGEQ7
-void readMSGEQ7(void) {
-  // set RESET pin low to enable output
-  digitalWrite(RESET, LOW);
-  delayMicroseconds(100);
-
-  // pulse STROBE pin to read all 7 frequency bands
-  for(uint8_t k = 0; k < 7; k++) {
-    // set STROBE pin low to enable output
-    digitalWrite(STROBE, LOW);
-    delayMicroseconds(65);
-
-    // read signal band level, account for later loudness adj.
-    levelRead[k] = analogRead(DCOUT) << 3;
-
-    // set STROBE pin high again to prepare for next band reading
-    digitalWrite(STROBE, HIGH);
-    delayMicroseconds(35);
-  }
-
-  // set RESET high again to reset MSGEQ7 multiplexer
-  digitalWrite(RESET, HIGH);
-
-  // spectral band adj. (very) loosely based on ISO 226:2003 [60 phons]
-  levelRead[0] = levelRead[0] >> 3;   //   63 Hz
-  levelRead[1] = levelRead[1] >> 1;   //  160 Hz
-  levelRead[2] = levelRead[2] >> 0;   //  400 Hz
-  levelRead[3] = levelRead[3] << 0;   // 1000 Hz
-  levelRead[4] = levelRead[4] << 0;   // 2500 Hz
-  levelRead[5] = levelRead[5] >> 1;   // 6250 Hz
-  levelRead[6] = levelRead[6] >> 2;   //16000 Hz
-}
-
-
-// find mean of levelRead array data read from MSGEQ7
-uint16_t msgeq7Mean(void) {
-  // calculate the sum of levelRead array
-  uint16_t sum = 0;
-  for(uint8_t k = 0; k < 7; k++) {
-    sum = sum + levelRead[k];
-  }
-  // much faster than divide-by-7, accurate to 7.00
-  return (sum * 585L) >> 12;
-}
-
 
 // use a 32-value circular buffer to track audio levels
 uint16_t expDecayBuf(uint16_t levelReadMean) {
