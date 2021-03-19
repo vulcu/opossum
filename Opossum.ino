@@ -115,7 +115,6 @@ bool     S1_PWM_DIR, S2_PWM_DIR = HIGH;  // HIGH = rising, LOW = falling
 uint16_t S1_PWM_VAL, S2_PWM_VAL = 0;     // PWM analogWrite value
 
 // buffer index, volume, filtered volume, base level, present level
-bool     invertVolumeControl = true;
 uint8_t  bufferIndx = 0;
 int16_t  vol, volOut = 0;
 uint16_t zeroSignal, baseLevel, levelOut = 251;
@@ -388,14 +387,6 @@ void setup() {
   Wire.begin();
   Wire.setClock(400000L);
   
-  // read back the value of the potentiometer connected to ADC
-  // and use this to control the signal output level
-  //if (invertVolumeControl) {
-    //vol = (int16_t)1023 - analogRead(VOLUME); // read Channel A0
-  //}
-  //else {
-    vol = analogRead(VOLUME); // read Channel A0
-  //}
 
   // unmute MAX9744 and configure initial amplifier volume parameters
   Wire.beginTransmission(MAX9744_I2CADDR);
@@ -450,14 +441,6 @@ void loop() {
     #endif
   }
  
-  // read back the value of the potentiometer connected to ADC
-  // and use this to control the signal output level
-  //if (invertVolumeControl) {
-    //vol = (int16_t)1023 - analogRead(VOLUME); // read Channel A0
-  //}
-  //else {
-    vol = analogRead(VOLUME); // read Channel A0
-  //}
   
   // ignore two LSB to filter noise and prevent output level oscillations
   if (abs(volOut - vol) > 4) {
