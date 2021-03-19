@@ -24,28 +24,6 @@
 // comment to deactivate UART debug mode
 #define DEBUG
 
-// define the MAX9744 I2C address, default is 0x4B
-#define MAX9744_I2CADDR ((uint8_t)0x4B)
-
-// define the digitalOut pins according to the schematic net name
-const uint8_t       S2_INT = 3;
-const uint8_t   IND_A2DP_N = 4;
-const uint8_t    S2_LEDPWM = 5;
-const uint8_t    S1_LEDPWM = 6;
-const uint8_t        RST_N = 8;
-const uint8_t       STROBE = 9;
-const uint8_t        RESET = 10;
-const uint8_t         MUTE = 12;
-const uint8_t         SHDN = 13;
-const uint8_t PRGM_SENSE_N = 17;
-
-// define the analogRead pins according to the schematic net name
-const uint8_t VOLUME = 0;
-const uint8_t  DCOUT = 1;
-
-// time in ms between audio input level reads
-const uint16_t audioReadInterval = 100;
-
 // Coefficient table for fast dB approximations
 const PROGMEM uint16_t dBCoefTable[25] =
 { 
