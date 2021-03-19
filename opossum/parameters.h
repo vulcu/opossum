@@ -49,4 +49,8 @@
   #define S2_PWM_MAX (uint8_t)255         // S2 maximum PWM level
   #define S2_PWM_DEF (uint8_t)200         // S2 default PWM level
 
+  // serial I/O buffer sizes (error reporting only)
+  #define SERIAL_BUFFER_SIZE (uint8_t)32
+  #define ERROR_MSG_BUFFER_SIZE (uint8_t)32
+
 #endif
