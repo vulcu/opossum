@@ -34,31 +34,6 @@ const PROGMEM uint16_t dBCoefTable[25] =
   6492, 6876, 7284, 7715, 8173
 };
 
-
-// BM62 UART commands for media playback control
-const uint8_t BM62_Play[7] =
-{
-  0xAA, 0x00, 0x03, 0x04, 0x00, 0x05, 0xF4
-};
-const uint8_t BM62_Pause[7] =
-{
-  0xAA, 0x00, 0x03, 0x04, 0x00, 0x06, 0xF3
-};
-const uint8_t BM62_Stop[7] =
-{
-  0xAA, 0x00, 0x03, 0x04, 0x00, 0x08, 0xF1
-};
-const uint8_t BM62_PrevTrack[7] =
-{
-  0xAA, 0x00, 0x03, 0x02, 0x00, 0x35, 0xC6
-};
-const uint8_t BM62_NextTrack[7] =
-{
-  0xAA, 0x00, 0x03, 0x02, 0x00, 0x34, 0xC7
-};
-
-// BM62 UART Commands for DSP processing control
-
 // min, max, and default 'on' LED brightness values for each switch LED
 uint8_t S1_PWM_MIN = 20;                // S1 minimum PWM level
 uint8_t S1_PWM_MAX = 255;               // S1 maximum PWM level
