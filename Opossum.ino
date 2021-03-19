@@ -269,8 +269,8 @@ void setup() {
   }
   
   // read weighted audio level data, find mean, calculate buffer value
-  readMSGEQ7();
-  levelOut = expDecayBuf(msgeq7Mean());
+  MSGEQ7_read(levelRead);
+  levelOut = expDecayBuf(MSGEQ7_mean(levelRead));
 
   // initialize base volume level and relative dB values
   baseLevel = levelOut;
@@ -296,8 +296,8 @@ void loop() {
     previousMillis = currentMillis;
 
     // read weighted audio level data, find mean, calculate buffer value
-    readMSGEQ7();
-    levelOut = expDecayBuf(msgeq7Mean());
+    MSGEQ7_read(levelRead);
+    levelOut = expDecayBuf(MSGEQ7_mean(levelRead));
 
     #if defined DEBUG
       uint16_t levelDebug[2] = {(uint16_t)(lowByte(volOut >> 4)), levelOut};
