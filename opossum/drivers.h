@@ -19,9 +19,13 @@
 #ifndef DRIVERS_H
 #define DRIVERS_H
 
- /*  ########################
+  #include "parameters.h"
+
+ /*
+  *  ########################
   *  BM62 Bluetooth Interface
-  */ ########################
+  *  ########################
+  */
   // BM62 UART commands for media playback control
   const uint8_t BM62_Play[7] =
   {
@@ -44,10 +48,8 @@
     0xAA, 0x00, 0x03, 0x02, 0x00, 0x34, 0xC7
   };
 
-  // BM62 UART Commands for DSP processing control
-
   // check if the BM62 programming pin is pulled low
-  void isProgramMode(void) {
+  void BM62_isProgramMode(void) {
     if (!digitalRead(PRGM_SENSE_N)) {
       set_sleep_mode(SLEEP_MODE_PWR_DOWN);  // set sleep mode to power down
       cli();                                // globally disable interrupts
@@ -60,7 +62,7 @@
   }
 
   // for calculating the checksum of a BM62 UART command:
-  byte checksum(uint8_t a[], uint8_t numel) {
+  byte BM62_checksum(uint8_t a[], uint8_t numel) {
     // BM62 documentation is lacking but pretty sure
     uint16_t sum = 0;
     for (uint8_t k = 2; k < numel - 1; k++) {
@@ -72,11 +74,15 @@
     return(lowByte(sum));
   }
 
- /*  ##############################
+
+
+ /*  
+  *  ##############################
   *  MSGEQ7 Spectrum Level Detector
-  */ ##############################
+  *  ##############################
+  */
   // read back spectral band data from the MSGEQ7
-  void readMSGEQ7(void) {
+  void MSGEQ7_read(uint16_t *levelRead) {
     // set RESET pin low to enable output
     digitalWrite(RESET, LOW);
     delayMicroseconds(100);
@@ -109,7 +115,7 @@
   }
 
   // find mean of levelRead array data read from MSGEQ7
-  uint16_t msgeq7Mean(void) {
+  uint16_t MSGEQ7_mean(uint16_t *levelRead) {
     // calculate the sum of levelRead array
     uint16_t sum = 0;
     for(uint8_t k = 0; k < 7; k++) {
@@ -119,9 +125,13 @@
     return (sum * 585L) >> 12;
   }
 
- /*  #################
+
+
+ /*  
+  *  #################
   *  MAX9744 Amplifier
-  */ #################
+  *  #################
+  */
   // MAX9744 absolute gain levels (dB), multiplied
   // by 10x to allow PROGMEM storage as int16_t
   const int16_t MAX9744GainLevel[64] PROGMEM = 
@@ -144,32 +154,4 @@
     -868,  -903,  -929, -1095
   };
 
-/*
-  void control_BM62_RST_N(bool VALUE) {
-    // check Port D, PD3 to see if port mode is already set to output
-    uint8_t portDirection = portModeRegister(DDRD);
-    if ((portDirection & 0b00001000) != 0b00001000) {
-      pinMode(DM556T_ENA, OUTPUT);
-    }
-    digitalWrite(DM556T_ENA, VALUE);
-  }
-
-  void control_BM62_PRGM_SENSE_N(bool VALUE) {
-    // check Port D, PD4 to see if port mode is already set to output
-    uint8_t portDirection = portModeRegister(DDRD);
-    if ((portDirection & 0b00010000) != 0b00010000) {
-      pinMode(DM556T_DIR, OUTPUT);
-    }
-    digitalWrite(DM556T_DIR, VALUE);
-  }
-
-  void control_DM556T_PUL(bool VALUE) {
-    // check Port D, PD5 to see if port mode is already set to output
-    uint8_t portDirection = portModeRegister(DDRD);
-    if ((portDirection & 0b00100000) != 0b00100000) {
-      pinMode(DM556T_PUL, OUTPUT);
-    }
-    digitalWrite(DM556T_PUL, VALUE);
-  }
-*/
 #endif

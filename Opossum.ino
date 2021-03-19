@@ -21,11 +21,14 @@
 #include <avr/sleep.h>
 #include <Wire.h>
 
+#include "opossum/drivers.h"
+#include "opossum/parameters.h"
+
 // comment to deactivate UART debug mode
 #define DEBUG
 
 // Coefficient table for fast dB approximations
-const PROGMEM uint16_t dBCoefTable[25] =
+const uint16_t dBCoefTable[25] PROGMEM =
 { 
   2053, 2175, 2303, 2440, 2584,
   2738, 2900, 3072, 3254, 3446,
@@ -160,6 +163,7 @@ uint16_t expDecayBuf(uint16_t levelReadMean) {
 }
 
 
+
 // update the relative dB level bands using currently defined volume level
 void dBFastRelativeLevel(void) {
   for(uint8_t k = 0; k < 25; k++) {
@@ -168,10 +172,10 @@ void dBFastRelativeLevel(void) {
 }
 
 
+
 // calculate allowable MAX9744 volume adjustment range
 void updateVolumeRange(void) {
   uint8_t CurrentVolumeLevel = lowByte(volOut >> 4);
-  uint8_t volumeRange[2];
   if (CurrentVolumeLevel == (uint8_t)0) {
     volumeRange[0] = 0;
     volumeRange[1] = 0;
@@ -241,6 +245,7 @@ void setup() {
   Wire.begin();
   Wire.setClock(400000L);
   
+  vol = analogRead(VOLUME); // read Channel A0
 
   // unmute MAX9744 and configure initial amplifier volume parameters
   Wire.beginTransmission(MAX9744_I2CADDR);
@@ -263,6 +268,7 @@ void setup() {
   baseLevel = levelOut;
   dBFastRelativeLevel();
 }
+
 
 
 void loop() {
@@ -295,6 +301,7 @@ void loop() {
     #endif
   }
  
+  vol = analogRead(VOLUME); // read Channel A0
   
   // ignore two LSB to filter noise and prevent output level oscillations
   if (abs(volOut - vol) > 4) {
