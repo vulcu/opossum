@@ -191,19 +191,6 @@ void updateVolumeRange(void) {
 }
 
 
-// for calculating the checksum of a BM62 UART command:
-byte checksum(uint8_t a[], uint8_t numel) {
-  // BM62 documentation is lacking but pretty sure
-  uint16_t sum = 0;
-  for (uint8_t k = 2; k < numel - 1; k++) {
-    sum = sum + a[k];
-  }
-
-  // subtract sum from 0xFFFF and add one; use only the lower byte
-  sum = ((uint16_t)0xFFFF - sum) + (uint16_t)0x0001;
-  return(lowByte(sum));
-}
-
 
 // set up and configure the MCU, BM62, and MSGEQ7
 void setup() {
