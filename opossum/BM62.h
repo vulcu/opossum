@@ -62,6 +62,26 @@ class BM62 {
         0x02, 0x00, 0x34
     };
 
+    // build the BM62 UART media command array from its component parts:
+    uint8_t buildMediaCommand(uint8_t mediaCommand[], uint8_t instruction[]) {
+      memcpy(mediaCommand, BM62_Media_Command, BYTE_COUNT_MEDIA_COMMAND);
+      memcpy(mediaCommand + BYTE_COUNT_MEDIA_PREFIX, instruction, BYTE_COUNT_MEDIA_INSTRUCTION);
+      mediaCommand[BYTE_COUNT_MEDIA_COMMAND - 1] = checksum(mediaCommand, BYTE_COUNT_MEDIA_COMMAND);
+    }
+
+    // for calculating the checksum of a BM62 UART command:
+    uint8_t checksum(uint8_t command[], uint8_t command_length) {
+      // BM62 documentation is lacking but pretty sure this is right
+      uint16_t chksum = 0;
+      for (uint8_t k = 2; k < command_length - 1; k++) {
+        chksum = chksum + command[k];
+      }
+
+      // subtract sum from 0xFFFF and add one; use only the lower byte
+      chksum = ((uint16_t)0xFFFF - chksum) + (uint16_t)0x0001;
+      return(lowByte(chksum));
+    }
+
     // check if the BM62 programming pin is pulled low
     void isProgramMode(void) {
       if (!read(PRGM_SENSE_N)) {
@@ -75,17 +95,11 @@ class BM62 {
       }
     }
 
-    // for calculating the checksum of a BM62 UART command:
-    byte checksum(uint8_t a[], uint8_t numel) {
-      // BM62 documentation is lacking but pretty sure
-      uint16_t sum = 0;
-      for (uint8_t k = 2; k < numel - 1; k++) {
-        sum = sum + a[k];
-      }
-
-      // subtract sum from 0xFFFF and add one; use only the lower byte
-      sum = ((uint16_t)0xFFFF - sum) + (uint16_t)0x0001;
-      return(lowByte(sum));
+    // build the BM62 UART media command array w/ checksum and write over serial UART
+    void writeMediaCommand(const uint8_t *instruction) {
+        uint8_t mediaCommand[BYTE_COUNT_MEDIA_COMMAND];
+        buildMediaCommand(mediaCommand, (uint8_t *)instruction);
+        Serial.write(mediaCommand, BYTE_COUNT_MEDIA_COMMAND);
     }
 
   public:
