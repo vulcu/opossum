@@ -22,6 +22,7 @@
 #include <Wire.h>
 
 #include "opossum/BM62.h"
+#include "opossum/MSGEQ7.h"
 #include "opossum/drivers.h"
 #include "opossum/parameters.h"
 
@@ -69,6 +70,12 @@ bool BM62_initSerialPort = true;
 
 // create BM62 driver object
 BM62 bluetooth(BM62_initSerialPort);
+
+// define if analog input pullup should be set active when MSGEQ7 is init
+bool MSGEQ7_isInputPullup = false;
+
+// create BM62 driver object
+MSGEQ7 spectrum(MSGEQ7_isInputPullup);
 
 
 
@@ -213,8 +220,8 @@ void setup() {
   //pinMode(IND_A2DP_N, INPUT_PULLUP);
   pinMode(S2_LEDPWM,  OUTPUT);
   pinMode(S1_LEDPWM,  OUTPUT);
-  pinMode(STROBE,     OUTPUT);
-  pinMode(RESET,      OUTPUT);
+  //pinMode(STROBE,     OUTPUT);
+  //pinMode(RESET,      OUTPUT);
   pinMode(MUTE,       OUTPUT);
   pinMode(SHDN,       OUTPUT);  
 
@@ -223,11 +230,14 @@ void setup() {
   digitalWrite(S2_LEDPWM, LOW);
 
   // set analog input pullup to minimize glitchy MSGEQ7 reads
-  digitalWrite(A1, INPUT);
+  //digitalWrite(A1, INPUT);
 
   // set MSGEQ7 strobe low, and reset high
-  digitalWrite(STROBE, LOW);
-  digitalWrite(RESET, HIGH);
+  //digitalWrite(STROBE, LOW);
+  //digitalWrite(RESET, HIGH);
+
+  // initialize the MSGEQ7
+  spectrum.init();
 
   // mute the MAX9744 then take it out of shutdown
   digitalWrite(MUTE, LOW);
@@ -257,8 +267,8 @@ void setup() {
   }
   
   // read weighted audio level data, find mean, calculate buffer value
-  MSGEQ7_read(levelRead);
-  levelOut = expDecayBuf(MSGEQ7_mean(levelRead));
+  spectrum.read(levelRead);
+  levelOut = expDecayBuf(spectrum.mean(levelRead));
 
   // initialize base volume level and relative dB values
   baseLevel = levelOut;
@@ -283,8 +293,8 @@ void loop() {
     previousMillis = currentMillis;
 
     // read weighted audio level data, find mean, calculate buffer value
-    MSGEQ7_read(levelRead);
-    levelOut = expDecayBuf(MSGEQ7_mean(levelRead));
+    spectrum.read(levelRead);
+    levelOut = expDecayBuf(spectrum.mean(levelRead));
 
     #if defined DEBUG
       uint16_t levelDebug[2] = {(uint16_t)(lowByte(volOut >> 4)), levelOut};
