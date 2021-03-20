@@ -235,6 +235,7 @@ void setup() {
 
   // wait for the BM62 to indicate a successful A2DP connection
   waitForConnection();
+  bluetooth.stop();
 
   // initialize Wire library and set clock rate to 400 kHz
   Wire.begin();
@@ -270,6 +271,7 @@ void loop() {
   if (bluetooth.read(IND_A2DP_N)) {
     // if A2DP connection is lost, halt and wait for reconnection
     waitForConnection();
+    bluetooth.stop();
   }
   
   // get the elapsed time, in millisecionds, since power-on
