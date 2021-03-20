@@ -49,6 +49,9 @@
   #define S2_PWM_MAX (uint8_t)255         // S2 maximum PWM level
   #define S2_PWM_DEF (uint8_t)200         // S2 default PWM level
 
+  // serial UART baud rate, must be 57600 for communication with BM62
+  #define SERIAL_BAUD_RATE (uint16_t)57600
+
   // serial I/O buffer sizes (error reporting only)
   #define SERIAL_BUFFER_SIZE (uint8_t)32
   #define ERROR_MSG_BUFFER_SIZE (uint8_t)32
