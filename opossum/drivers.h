@@ -26,6 +26,7 @@
   *  BM62 Bluetooth Interface
   *  ########################
   */
+ /*
   // BM62 UART commands for media playback control
   const uint8_t BM62_Play[7] =
   {
@@ -73,7 +74,7 @@
     sum = ((uint16_t)0xFFFF - sum) + (uint16_t)0x0001;
     return(lowByte(sum));
   }
-
+*/
 
 
  /*  

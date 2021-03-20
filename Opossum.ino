@@ -65,7 +65,7 @@ volatile uint8_t S2ButtonPressCount = 0;
 volatile uint32_t S2DebounceStart, S2DebounceStop = 0;
 
 // define if serial UART port should be initialized when BM62 is init
-bool BM62_initSerialPort = false;
+bool BM62_initSerialPort = true;
 
 // create BM62 driver object
 BM62 bluetooth(BM62_initSerialPort);
@@ -205,21 +205,8 @@ void updateVolumeRange(void) {
 
 // set up and configure the MCU, BM62, and MSGEQ7
 void setup() {
-  /*
-  // initialize the BM62 reset line and ensure reset is asserted
-  pinMode(RST_N, OUTPUT);
-  digitalWrite(RST_N, LOW);
-  
-  // wait 10 ms, then take the BM62 out of reset
-  delay(10);
-  digitalWrite(RST_N, HIGH);
-  
-  // determine if the BM62 is being programmed; if so, take a nap
-  pinMode(PRGM_SENSE_N, INPUT);
-  BM62_isProgramMode();
-  */
-
- bluetooth.init();
+  // initialize the BM62 bluetooth device
+  bluetooth.init();
 
   // initialize remaining digital pin modes
   pinMode(S2_INT,     INPUT);
@@ -248,9 +235,6 @@ void setup() {
 
   // wait for the BM62 to indicate a successful A2DP connection
   waitForConnection();
-
-  // initialize the UART port to talk to the BM62
-  //Serial.begin(57600, SERIAL_8N1);
 
   // initialize Wire library and set clock rate to 400 kHz
   Wire.begin();
@@ -286,9 +270,6 @@ void loop() {
   if (bluetooth.read(IND_A2DP_N)) {
     // if A2DP connection is lost, halt and wait for reconnection
     waitForConnection();
-    
-    // start playback from media device
-    //Serial.write(BM62_Play, 7);
   }
   
   // get the elapsed time, in millisecionds, since power-on

@@ -117,18 +117,23 @@ class BM62 {
       return (bool)digitalRead(pin);
     }
     void play(uint8_t pin) {
+      // start playback from bluetooth-connected media device
       Serial.write(BM62_Play, BYTE_COUNT_MEDIACONTROL);
     }
     void pause(uint8_t pin) {
+      // pause playback from bluetooth-connected media device
       Serial.write(BM62_Pause, BYTE_COUNT_MEDIACONTROL);
     }
     void stop(uint8_t pin) {
+      // stop playback from bluetooth-connected media device
       Serial.write(BM62_Stop, BYTE_COUNT_MEDIACONTROL);
     }
     void prev(uint8_t pin) {
+      // go to previous track on bluetooth-connected media device
       Serial.write(BM62_PrevTrack, BYTE_COUNT_MEDIACONTROL);
     }
     void next(uint8_t pin) {
+      // go to next track on bluetooth-connected media device
       Serial.write(BM62_NextTrack, BYTE_COUNT_MEDIACONTROL);
     }
 };
