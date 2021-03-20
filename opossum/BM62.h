@@ -21,8 +21,14 @@
 
 class BM62 {
   private:
-    #ifndef BYTE_COUNT_MEDIACONTROL
-      #define BYTE_COUNT_MEDIACONTROL (uint8_t)7
+    #ifndef BYTE_COUNT_MEDIA_COMMAND
+      #define BYTE_COUNT_MEDIA_COMMAND (uint8_t)7
+    #endif
+    #ifndef BYTE_COUNT_MEDIA_PREFIX
+      #define BYTE_COUNT_MEDIA_PREFIX (uint8_t)3
+    #endif
+    #ifndef BYTE_COUNT_MEDIA_INSTRUCTION
+      #define BYTE_COUNT_MEDIA_INSTRUCTION (uint8_t)3
     #endif
     #ifndef SERIAL_BAUD_RATE
       #define SERIAL_BAUD_RATE (uint16_t)57600
@@ -31,25 +37,29 @@ class BM62 {
     bool initSerialPort;
 
     // BM62 UART commands for media playback control
-    const uint8_t BM62_Play[BYTE_COUNT_MEDIACONTROL] =
+    uint8_t BM62_Media_Command[BYTE_COUNT_MEDIA_COMMAND] =
     {
-        0xAA, 0x00, 0x03, 0x04, 0x00, 0x05, 0xF4
+        0xAA, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00
     };
-    const uint8_t BM62_Pause[BYTE_COUNT_MEDIACONTROL] =
+    const uint8_t BM62_Play[BYTE_COUNT_MEDIA_INSTRUCTION] =
     {
-        0xAA, 0x00, 0x03, 0x04, 0x00, 0x06, 0xF3
+        0x04, 0x00, 0x05
     };
-    const uint8_t BM62_Stop[BYTE_COUNT_MEDIACONTROL] =
+    const uint8_t BM62_Pause[BYTE_COUNT_MEDIA_INSTRUCTION] =
     {
-        0xAA, 0x00, 0x03, 0x04, 0x00, 0x08, 0xF1
+        0x04, 0x00, 0x06
     };
-    const uint8_t BM62_PrevTrack[BYTE_COUNT_MEDIACONTROL] =
+    const uint8_t BM62_Stop[BYTE_COUNT_MEDIA_INSTRUCTION] =
     {
-        0xAA, 0x00, 0x03, 0x02, 0x00, 0x35, 0xC6
+        0x04, 0x00, 0x08
     };
-    const uint8_t BM62_NextTrack[BYTE_COUNT_MEDIACONTROL] =
+    const uint8_t BM62_Prev_Track[BYTE_COUNT_MEDIA_INSTRUCTION] =
     {
-        0xAA, 0x00, 0x03, 0x02, 0x00, 0x34, 0xC7
+        0x02, 0x00, 0x35
+    };
+    const uint8_t BM62_Next_Track[BYTE_COUNT_MEDIA_INSTRUCTION] =
+    {
+        0x02, 0x00, 0x34
     };
 
     // check if the BM62 programming pin is pulled low
