@@ -26,6 +26,7 @@
   *  MSGEQ7 Spectrum Level Detector
   *  ##############################
   */
+ /*
   // read back spectral band data from the MSGEQ7
   void MSGEQ7_read(uint16_t *levelRead) {
     // set RESET pin low to enable output
@@ -69,7 +70,7 @@
     // much faster than divide-by-7, accurate to 7.00
     return (sum * 585L) >> 12;
   }
-
+*/
 
 
  /*  
