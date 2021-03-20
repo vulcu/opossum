@@ -74,7 +74,7 @@ BM62 bluetooth(BM62_initSerialPort);
 
 // wait for BM62 to indicate a successful A2DP connection
 void waitForConnection(void) {
-  while (bluetooth.read(IND_A2DP_N)) {
+  while (!bluetooth.isConnected()) {
     // get the elapsed time, in milliseconds, since power-on
     uint32_t currentMillis = millis();
     
@@ -268,7 +268,7 @@ void setup() {
 
 
 void loop() {
-  if (bluetooth.read(IND_A2DP_N)) {
+  if (!bluetooth.isConnected()) {
     // if A2DP connection is lost, halt and wait for reconnection
     waitForConnection();
     bluetooth.stop();

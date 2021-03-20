@@ -84,7 +84,7 @@ class BM62 {
 
     // check if the BM62 programming pin is pulled low
     void isProgramMode(void) {
-      if (!read(PRGM_SENSE_N)) {
+      if (!digitalRead(PRGM_SENSE_N)) {
         set_sleep_mode(SLEEP_MODE_PWR_DOWN);  // set sleep mode to power down
         cli();                                // globally disable interrupts
         sleep_enable();                       // set sleep bit
@@ -111,11 +111,11 @@ class BM62 {
     void init(void) {
       // initialize the BM62 reset line and ensure reset is asserted
       pinMode(RST_N, OUTPUT);
-      low(RST_N);
+      reset(true);
 
       // wait 10 ms, then take the BM62 out of reset
       delay(10);
-      high(RST_N);
+      reset(false);
       
       // initialize the BM62 programming sense line
       pinMode(PRGM_SENSE_N, INPUT);
@@ -131,14 +131,18 @@ class BM62 {
         Serial.begin(SERIAL_BAUD_RATE, SERIAL_8N1);
       }
     }
-    void low(uint8_t pin) {
-      digitalWrite(pin, LOW);
+    void reset(bool isReset) {
+      // set BM62 reset status, active-low signal so isReset == true sets RST_N LOW
+      if (isReset) {
+        digitalWrite(RST_N, LOW);
+      }
+      else {
+        digitalWrite(RST_N, HIGH);
+      }
     }
-    void high(uint8_t pin) {
-      digitalWrite(pin, HIGH);
-    }
-    bool read(uint8_t pin) {
-      return (bool)digitalRead(pin);
+    bool isConnected(void) {
+      // query state of BM62 IND_A2DP_N pin and return FALSE if no active A2DP connection
+      return (bool)!digitalRead(IND_A2DP_N);
     }
     void play(void) {
       // start playback from bluetooth-connected media device
