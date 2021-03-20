@@ -21,61 +21,6 @@
 
   #include "parameters.h"
 
- /*
-  *  ########################
-  *  BM62 Bluetooth Interface
-  *  ########################
-  */
-  // BM62 UART commands for media playback control
-  const uint8_t BM62_Play[7] =
-  {
-    0xAA, 0x00, 0x03, 0x04, 0x00, 0x05, 0xF4
-  };
-  const uint8_t BM62_Pause[7] =
-  {
-    0xAA, 0x00, 0x03, 0x04, 0x00, 0x06, 0xF3
-  };
-  const uint8_t BM62_Stop[7] =
-  {
-    0xAA, 0x00, 0x03, 0x04, 0x00, 0x08, 0xF1
-  };
-  const uint8_t BM62_PrevTrack[7] =
-  {
-    0xAA, 0x00, 0x03, 0x02, 0x00, 0x35, 0xC6
-  };
-  const uint8_t BM62_NextTrack[7] =
-  {
-    0xAA, 0x00, 0x03, 0x02, 0x00, 0x34, 0xC7
-  };
-
-  // check if the BM62 programming pin is pulled low
-  void BM62_isProgramMode(void) {
-    if (!digitalRead(PRGM_SENSE_N)) {
-      set_sleep_mode(SLEEP_MODE_PWR_DOWN);  // set sleep mode to power down
-      cli();                                // globally disable interrupts
-      sleep_enable();                       // set sleep bit
-      sleep_bod_disable();                  // disable brown out detection
-      sleep_cpu();                          // go to sleep
-      
-      // interrupts are disabled, mcu will NOT wake up until next power cycle!
-    }
-  }
-
-  // for calculating the checksum of a BM62 UART command:
-  byte BM62_checksum(uint8_t a[], uint8_t numel) {
-    // BM62 documentation is lacking but pretty sure
-    uint16_t sum = 0;
-    for (uint8_t k = 2; k < numel - 1; k++) {
-      sum = sum + a[k];
-    }
-
-    // subtract sum from 0xFFFF and add one; use only the lower byte
-    sum = ((uint16_t)0xFFFF - sum) + (uint16_t)0x0001;
-    return(lowByte(sum));
-  }
-
-
-
  /*  
   *  ##############################
   *  MSGEQ7 Spectrum Level Detector

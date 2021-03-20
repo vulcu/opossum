@@ -21,8 +21,14 @@
 
 class BM62 {
   private:
-    #ifndef BYTE_COUNT_MEDIACONTROL
-      #define BYTE_COUNT_MEDIACONTROL (uint8_t)7
+    #ifndef BYTE_COUNT_MEDIA_COMMAND
+      #define BYTE_COUNT_MEDIA_COMMAND (uint8_t)7
+    #endif
+    #ifndef BYTE_COUNT_MEDIA_PREFIX
+      #define BYTE_COUNT_MEDIA_PREFIX (uint8_t)3
+    #endif
+    #ifndef BYTE_COUNT_MEDIA_INSTRUCTION
+      #define BYTE_COUNT_MEDIA_INSTRUCTION (uint8_t)3
     #endif
     #ifndef SERIAL_BAUD_RATE
       #define SERIAL_BAUD_RATE (uint16_t)57600
@@ -31,26 +37,50 @@ class BM62 {
     bool initSerialPort;
 
     // BM62 UART commands for media playback control
-    const uint8_t BM62_Play[BYTE_COUNT_MEDIACONTROL] =
+    uint8_t BM62_Media_Command[BYTE_COUNT_MEDIA_COMMAND] =
     {
-        0xAA, 0x00, 0x03, 0x04, 0x00, 0x05, 0xF4
+        0xAA, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00
     };
-    const uint8_t BM62_Pause[BYTE_COUNT_MEDIACONTROL] =
+    const uint8_t BM62_Play[BYTE_COUNT_MEDIA_INSTRUCTION] =
     {
-        0xAA, 0x00, 0x03, 0x04, 0x00, 0x06, 0xF3
+        0x04, 0x00, 0x05
     };
-    const uint8_t BM62_Stop[BYTE_COUNT_MEDIACONTROL] =
+    const uint8_t BM62_Pause[BYTE_COUNT_MEDIA_INSTRUCTION] =
     {
-        0xAA, 0x00, 0x03, 0x04, 0x00, 0x08, 0xF1
+        0x04, 0x00, 0x06
     };
-    const uint8_t BM62_PrevTrack[BYTE_COUNT_MEDIACONTROL] =
+    const uint8_t BM62_Stop[BYTE_COUNT_MEDIA_INSTRUCTION] =
     {
-        0xAA, 0x00, 0x03, 0x02, 0x00, 0x35, 0xC6
+        0x04, 0x00, 0x08
     };
-    const uint8_t BM62_NextTrack[BYTE_COUNT_MEDIACONTROL] =
+    const uint8_t BM62_Prev_Track[BYTE_COUNT_MEDIA_INSTRUCTION] =
     {
-        0xAA, 0x00, 0x03, 0x02, 0x00, 0x34, 0xC7
+        0x02, 0x00, 0x35
     };
+    const uint8_t BM62_Next_Track[BYTE_COUNT_MEDIA_INSTRUCTION] =
+    {
+        0x02, 0x00, 0x34
+    };
+
+    // build the BM62 UART media command array from its component parts:
+    uint8_t buildMediaCommand(uint8_t mediaCommand[], uint8_t instruction[]) {
+      memcpy(mediaCommand, BM62_Media_Command, BYTE_COUNT_MEDIA_COMMAND);
+      memcpy(mediaCommand + BYTE_COUNT_MEDIA_PREFIX, instruction, BYTE_COUNT_MEDIA_INSTRUCTION);
+      mediaCommand[BYTE_COUNT_MEDIA_COMMAND - 1] = checksum(mediaCommand, BYTE_COUNT_MEDIA_COMMAND);
+    }
+
+    // for calculating the checksum of a BM62 UART command:
+    uint8_t checksum(uint8_t command[], uint8_t command_length) {
+      // BM62 documentation is lacking but pretty sure this is right
+      uint16_t chksum = 0;
+      for (uint8_t k = 2; k < command_length - 1; k++) {
+        chksum = chksum + command[k];
+      }
+
+      // subtract sum from 0xFFFF and add one; use only the lower byte
+      chksum = ((uint16_t)0xFFFF - chksum) + (uint16_t)0x0001;
+      return(lowByte(chksum));
+    }
 
     // check if the BM62 programming pin is pulled low
     void isProgramMode(void) {
@@ -65,17 +95,11 @@ class BM62 {
       }
     }
 
-    // for calculating the checksum of a BM62 UART command:
-    byte checksum(uint8_t a[], uint8_t numel) {
-      // BM62 documentation is lacking but pretty sure
-      uint16_t sum = 0;
-      for (uint8_t k = 2; k < numel - 1; k++) {
-        sum = sum + a[k];
-      }
-
-      // subtract sum from 0xFFFF and add one; use only the lower byte
-      sum = ((uint16_t)0xFFFF - sum) + (uint16_t)0x0001;
-      return(lowByte(sum));
+    // build the BM62 UART media command array w/ checksum and write over serial UART
+    void writeMediaCommand(const uint8_t *instruction) {
+        uint8_t mediaCommand[BYTE_COUNT_MEDIA_COMMAND];
+        buildMediaCommand(mediaCommand, (uint8_t *)instruction);
+        Serial.write(mediaCommand, BYTE_COUNT_MEDIA_COMMAND);
     }
 
   public:
@@ -116,19 +140,24 @@ class BM62 {
     bool read(uint8_t pin) {
       return (bool)digitalRead(pin);
     }
-    void play(uint8_t pin) {
-      Serial.write(BM62_Play, BYTE_COUNT_MEDIACONTROL);
+    void play(void) {
+      // start playback from bluetooth-connected media device
+      writeMediaCommand(BM62_Play);
     }
-    void pause(uint8_t pin) {
-      Serial.write(BM62_Pause, BYTE_COUNT_MEDIACONTROL);
+    void pause(void) {
+      // pause playback from bluetooth-connected media device
+      writeMediaCommand(BM62_Pause);
     }
-    void stop(uint8_t pin) {
-      Serial.write(BM62_Stop, BYTE_COUNT_MEDIACONTROL);
+    void stop(void) {
+      // stop playback from bluetooth-connected media device
+      writeMediaCommand(BM62_Stop);
     }
-    void prev(uint8_t pin) {
-      Serial.write(BM62_PrevTrack, BYTE_COUNT_MEDIACONTROL);
+    void prev(void) {
+      // go to previous track on bluetooth-connected media device
+      writeMediaCommand(BM62_Prev_Track);
     }
-    void next(uint8_t pin) {
-      Serial.write(BM62_NextTrack, BYTE_COUNT_MEDIACONTROL);
+    void next(void) {
+      // go to next track on bluetooth-connected media device
+      writeMediaCommand(BM62_Next_Track);
     }
 };
