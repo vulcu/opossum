@@ -22,12 +22,15 @@ class MSGEQ7 {
   private:
     bool isInputPullup;
 
+
   public:
     MSGEQ7(bool isInputPullup) {
       // Use 'this->' to make the difference between the 'pin' 
       // attribute of the class and the local variable
       this->isInputPullup = isInputPullup;
     }
+
+
     void init(void) {
       // initialize the MSGEQ7 reset and strobe signals
       pinMode(STROBE, OUTPUT);
@@ -46,6 +49,8 @@ class MSGEQ7 {
         digitalWrite(A1, INPUT);
       }
     }
+
+
     void read(uint16_t *levelRead) {
       // read back spectral band data from the MSGEQ7
       // start by setting RESET pin low to enable output
@@ -78,6 +83,8 @@ class MSGEQ7 {
       levelRead[5] = levelRead[5] >> 1;   // 6250 Hz
       levelRead[6] = levelRead[6] >> 2;   //16000 Hz
     }
+
+
     uint16_t mean(uint16_t *levelRead) {
       // find mean of levelRead array data read from MSGEQ7
       // calculate the sum of levelRead array
