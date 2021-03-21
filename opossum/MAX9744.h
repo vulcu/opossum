@@ -1,5 +1,5 @@
 /*
- * MSGEQ7.h - MSI MSGEQ7 Seven Band Graphic Equalizer Driver for Arduino
+ * MAX9744.h - Maxim MAX9744 Class-D Amplifier driver for Arduino
  * Copyright (c) 2017 Winry R. Litwa-Vulcu. All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify

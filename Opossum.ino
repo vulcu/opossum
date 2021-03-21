@@ -23,7 +23,6 @@
 
 #include "opossum/BM62.h"
 #include "opossum/MSGEQ7.h"
-#include "opossum/drivers.h"
 #include "opossum/parameters.h"
 
 // comment to deactivate UART debug mode
