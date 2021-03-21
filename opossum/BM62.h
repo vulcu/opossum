@@ -162,7 +162,7 @@ class BM62 {
 
     void play(void) {
       // start playback from bluetooth-connected media device
-      if (isConnected) {
+      if (isConnected()) {
         writeMediaCommand(BM62_Play);
       }
     }
@@ -170,7 +170,7 @@ class BM62 {
 
     void pause(void) {
       // pause playback from bluetooth-connected media device
-      if (isConnected) {
+      if (isConnected()) {
         writeMediaCommand(BM62_Pause);
       }
     }
@@ -178,7 +178,7 @@ class BM62 {
 
     void stop(void) {
       // stop playback from bluetooth-connected media device
-      if (isConnected) {
+      if (isConnected()) {
         writeMediaCommand(BM62_Stop);
       }
     }
@@ -186,7 +186,7 @@ class BM62 {
 
     void prev(void) {
       // go to previous track on bluetooth-connected media device
-      if (isConnected) {
+      if (isConnected()) {
         writeMediaCommand(BM62_Prev_Track);
       }
     }
@@ -194,7 +194,7 @@ class BM62 {
 
     void next(void) {
       // go to next track on bluetooth-connected media device
-      if (isConnected) {
+      if (isConnected()) {
         writeMediaCommand(BM62_Next_Track);
       }
     }
