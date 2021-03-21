@@ -50,6 +50,12 @@ class MAX9744 {
       // create driver object
     }
 
+    
+    void init(void) {
+      // initialize the MSGEQ7 reset and strobe signals
+      pinMode(STROBE, OUTPUT);
+    }
+
 
     void mute(void) {
       // initialize the MSGEQ7 reset and strobe signals
