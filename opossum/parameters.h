@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PARAMETERS_H
-#define PARAMETERS_H
+#ifndef INCLUDE_PARAMETERS_H
+#define INCLUDE_PARAMETERS_H
 
   // define the MAX9744 I2C address, default is 0x4B
   #define MAX9744_I2CADDR ((uint8_t)0x4B)
