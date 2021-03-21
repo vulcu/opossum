@@ -78,7 +78,6 @@ bool MSGEQ7_isInputPullup = false;
 MSGEQ7 spectrum(MSGEQ7_isInputPullup);
 
 
-
 // wait for BM62 to indicate a successful A2DP connection
 void waitForConnection(void) {
   while (bluetooth.read(IND_A2DP_N)) {
@@ -143,7 +142,6 @@ void waitForConnection(void) {
 }
 
 
-
 // use a 32-value circular buffer to track audio levels
 uint16_t expDecayBuf(uint16_t levelReadMean) {
   if (bufferIndx >= 32) {
@@ -177,14 +175,12 @@ uint16_t expDecayBuf(uint16_t levelReadMean) {
 }
 
 
-
 // update the relative dB level bands using currently defined volume level
 void dBFastRelativeLevel(void) {
   for(uint8_t k = 0; k < 25; k++) {
     dBLevs[k] = ((uint32_t)baseLevel * pgm_read_word(&(dBCoefTable[k]))) >> 12;
   }
 }
-
 
 
 // calculate allowable MAX9744 volume adjustment range
@@ -209,7 +205,6 @@ void updateVolumeRange(void) {
 }
 
 
-
 // set up and configure the MCU, BM62, and MSGEQ7
 void setup() {
   // initialize the BM62 bluetooth device
@@ -228,13 +223,6 @@ void setup() {
   // ensure both LEDs are turned off
   digitalWrite(S1_LEDPWM, LOW);
   digitalWrite(S2_LEDPWM, LOW);
-
-  // set analog input pullup to minimize glitchy MSGEQ7 reads
-  //digitalWrite(A1, INPUT);
-
-  // set MSGEQ7 strobe low, and reset high
-  //digitalWrite(STROBE, LOW);
-  //digitalWrite(RESET, HIGH);
 
   // initialize the MSGEQ7
   spectrum.init();
@@ -274,7 +262,6 @@ void setup() {
   baseLevel = levelOut;
   dBFastRelativeLevel();
 }
-
 
 
 void loop() {
