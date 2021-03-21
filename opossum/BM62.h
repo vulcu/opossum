@@ -34,7 +34,9 @@ class BM62 {
       #define SERIAL_BAUD_RATE (uint16_t)57600
     #endif
 
+
     bool initSerialPort;
+
 
     // BM62 UART commands for media playback control
     uint8_t BM62_Media_Command[BYTE_COUNT_MEDIA_COMMAND] =
@@ -62,12 +64,14 @@ class BM62 {
         0x02, 0x00, 0x34
     };
 
+
     // build the BM62 UART media command array from its component parts:
     uint8_t buildMediaCommand(uint8_t mediaCommand[], uint8_t instruction[]) {
       memcpy(mediaCommand, BM62_Media_Command, BYTE_COUNT_MEDIA_COMMAND);
       memcpy(mediaCommand + BYTE_COUNT_MEDIA_PREFIX, instruction, BYTE_COUNT_MEDIA_INSTRUCTION);
       mediaCommand[BYTE_COUNT_MEDIA_COMMAND - 1] = checksum(mediaCommand, BYTE_COUNT_MEDIA_COMMAND);
     }
+
 
     // for calculating the checksum of a BM62 UART command:
     uint8_t checksum(uint8_t command[], uint8_t command_length) {
@@ -82,6 +86,7 @@ class BM62 {
       return(lowByte(chksum));
     }
 
+
     // check if the BM62 programming pin is pulled low
     void isProgramMode(void) {
       if (!digitalRead(PRGM_SENSE_N)) {
@@ -95,6 +100,7 @@ class BM62 {
       }
     }
 
+
     // build the BM62 UART media command array w/ checksum and write over serial UART
     void writeMediaCommand(const uint8_t *instruction) {
         uint8_t mediaCommand[BYTE_COUNT_MEDIA_COMMAND];
@@ -102,20 +108,29 @@ class BM62 {
         Serial.write(mediaCommand, BYTE_COUNT_MEDIA_COMMAND);
     }
 
+
   public:
     BM62(bool initSerialPort) {
       // Use 'this->' to make the difference between the 'pin' 
       // attribute of the class and the local variable
       this->initSerialPort = initSerialPort;
     }
+
+
+    void enable(void) {
+      // set BM62 reset status, active-low signal so HIGH enables device
+      digitalWrite(RST_N, LOW);
+    }
+
+
     void init(void) {
       // initialize the BM62 reset line and ensure reset is asserted
       pinMode(RST_N, OUTPUT);
-      reset(true);
+      reset();
 
       // wait 10 ms, then take the BM62 out of reset
       delay(10);
-      reset(false);
+      enable();
       
       // initialize the BM62 programming sense line
       pinMode(PRGM_SENSE_N, INPUT);
@@ -131,19 +146,20 @@ class BM62 {
         Serial.begin(SERIAL_BAUD_RATE, SERIAL_8N1);
       }
     }
-    void reset(bool isReset) {
-      // set BM62 reset status, active-low signal so isReset == true sets RST_N LOW
-      if (isReset) {
-        digitalWrite(RST_N, LOW);
-      }
-      else {
-        digitalWrite(RST_N, HIGH);
-      }
-    }
+
+
     bool isConnected(void) {
       // query state of BM62 IND_A2DP_N pin and return FALSE if no active A2DP connection
       return (bool)!digitalRead(IND_A2DP_N);
     }
+
+
+    void reset(void) {
+      // set BM62 reset status, active-low signal so LOW puts device in reset
+      digitalWrite(RST_N, HIGH);
+    }
+
+
     void play(void) {
       // start playback from bluetooth-connected media device
       writeMediaCommand(BM62_Play);
