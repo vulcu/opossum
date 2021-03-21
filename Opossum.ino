@@ -18,13 +18,12 @@
 
 // include libraries for PROGMEM, SLEEP, & I2C
 #include <avr/pgmspace.h>
-#include <avr/sleep.h>
 #include <Wire.h>
 
+#include "opossum/parameters.h"
 #include "opossum/BM62.h"
 #include "opossum/MSGEQ7.h"
 #include "opossum/drivers.h"
-#include "opossum/parameters.h"
 
 // comment to deactivate UART debug mode
 #define DEBUG
@@ -69,13 +68,13 @@ volatile uint32_t S2DebounceStart, S2DebounceStop = 0;
 bool BM62_initSerialPort = true;
 
 // create BM62 driver object
-BM62 bluetooth(BM62_initSerialPort);
+BM62 bluetooth(PRGM_SENSE_N, RST_N, IND_A2DP_N, BM62_initSerialPort);
 
 // define if analog input pullup should be set active when MSGEQ7 is init
 bool MSGEQ7_isInputPullup = false;
 
 // create BM62 driver object
-MSGEQ7 spectrum(MSGEQ7_isInputPullup);
+MSGEQ7 spectrum(STROBE, OUTPUT, RESET, MSGEQ7_isInputPullup);
 
 
 // wait for BM62 to indicate a successful A2DP connection
