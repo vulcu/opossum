@@ -162,22 +162,40 @@ class BM62 {
 
     void play(void) {
       // start playback from bluetooth-connected media device
-      writeMediaCommand(BM62_Play);
+      if (isConnected) {
+        writeMediaCommand(BM62_Play);
+      }
     }
+
+
     void pause(void) {
       // pause playback from bluetooth-connected media device
-      writeMediaCommand(BM62_Pause);
+      if (isConnected) {
+        writeMediaCommand(BM62_Pause);
+      }
     }
+
+
     void stop(void) {
       // stop playback from bluetooth-connected media device
-      writeMediaCommand(BM62_Stop);
+      if (isConnected) {
+        writeMediaCommand(BM62_Stop);
+      }
     }
+
+
     void prev(void) {
       // go to previous track on bluetooth-connected media device
-      writeMediaCommand(BM62_Prev_Track);
+      if (isConnected) {
+        writeMediaCommand(BM62_Prev_Track);
+      }
     }
+
+
     void next(void) {
       // go to next track on bluetooth-connected media device
-      writeMediaCommand(BM62_Next_Track);
+      if (isConnected) {
+        writeMediaCommand(BM62_Next_Track);
+      }
     }
 };
