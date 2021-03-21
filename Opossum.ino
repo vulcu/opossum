@@ -22,6 +22,7 @@
 #include <Wire.h>
 
 #include "opossum/BM62.h"
+#include "opossum/MSGEQ7.h"
 #include "opossum/drivers.h"
 #include "opossum/parameters.h"
 
@@ -70,6 +71,11 @@ bool BM62_initSerialPort = true;
 // create BM62 driver object
 BM62 bluetooth(BM62_initSerialPort);
 
+// define if analog input pullup should be set active when MSGEQ7 is init
+bool MSGEQ7_isInputPullup = false;
+
+// create BM62 driver object
+MSGEQ7 spectrum(MSGEQ7_isInputPullup);
 
 
 // wait for BM62 to indicate a successful A2DP connection
@@ -136,7 +142,6 @@ void waitForConnection(void) {
 }
 
 
-
 // use a 32-value circular buffer to track audio levels
 uint16_t expDecayBuf(uint16_t levelReadMean) {
   if (bufferIndx >= 32) {
@@ -170,14 +175,12 @@ uint16_t expDecayBuf(uint16_t levelReadMean) {
 }
 
 
-
 // update the relative dB level bands using currently defined volume level
 void dBFastRelativeLevel(void) {
   for(uint8_t k = 0; k < 25; k++) {
     dBLevs[k] = ((uint32_t)baseLevel * pgm_read_word(&(dBCoefTable[k]))) >> 12;
   }
 }
-
 
 
 // calculate allowable MAX9744 volume adjustment range
@@ -202,7 +205,6 @@ void updateVolumeRange(void) {
 }
 
 
-
 // set up and configure the MCU, BM62, and MSGEQ7
 void setup() {
   // initialize the BM62 bluetooth device
@@ -213,8 +215,8 @@ void setup() {
   //pinMode(IND_A2DP_N, INPUT_PULLUP);
   pinMode(S2_LEDPWM,  OUTPUT);
   pinMode(S1_LEDPWM,  OUTPUT);
-  pinMode(STROBE,     OUTPUT);
-  pinMode(RESET,      OUTPUT);
+  //pinMode(STROBE,     OUTPUT);
+  //pinMode(RESET,      OUTPUT);
   pinMode(MUTE,       OUTPUT);
   pinMode(SHDN,       OUTPUT);  
 
@@ -222,12 +224,8 @@ void setup() {
   digitalWrite(S1_LEDPWM, LOW);
   digitalWrite(S2_LEDPWM, LOW);
 
-  // set analog input pullup to minimize glitchy MSGEQ7 reads
-  digitalWrite(A1, INPUT);
-
-  // set MSGEQ7 strobe low, and reset high
-  digitalWrite(STROBE, LOW);
-  digitalWrite(RESET, HIGH);
+  // initialize the MSGEQ7
+  spectrum.init();
 
   // mute the MAX9744 then take it out of shutdown
   digitalWrite(MUTE, LOW);
@@ -257,14 +255,13 @@ void setup() {
   }
   
   // read weighted audio level data, find mean, calculate buffer value
-  MSGEQ7_read(levelRead);
-  levelOut = expDecayBuf(MSGEQ7_mean(levelRead));
+  spectrum.read(levelRead);
+  levelOut = expDecayBuf(spectrum.mean(levelRead));
 
   // initialize base volume level and relative dB values
   baseLevel = levelOut;
   dBFastRelativeLevel();
 }
-
 
 
 void loop() {
@@ -283,8 +280,8 @@ void loop() {
     previousMillis = currentMillis;
 
     // read weighted audio level data, find mean, calculate buffer value
-    MSGEQ7_read(levelRead);
-    levelOut = expDecayBuf(MSGEQ7_mean(levelRead));
+    spectrum.read(levelRead);
+    levelOut = expDecayBuf(spectrum.mean(levelRead));
 
     #if defined DEBUG
       uint16_t levelDebug[2] = {(uint16_t)(lowByte(volOut >> 4)), levelOut};
