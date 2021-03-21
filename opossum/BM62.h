@@ -17,9 +17,101 @@
  */
 
 class BM62 {
+  public:
+    BM62(uint8_t prgm_sense_n, uint8_t reset_n, uint8_t ind_a2dp_n, bool initSerialPort) {
+      // Use 'this->' to make the difference between the 'pin' 
+      // attribute of the class and the local variable
+      this->prgm_sense_n = prgm_sense_n;
+      this->reset_n = reset_n;
+      this->ind_a2dp_n = ind_a2dp_n;
+      this->initSerialPort = initSerialPort;
+    }
+
+
+    void enable(void) {
+      // set BM62 reset status, active-low signal so HIGH enables device
+      digitalWrite(reset_n, HIGH);
+    }
+
+
+    void init(void) {
+      // initialize the BM62 reset line and ensure reset is asserted
+      pinMode(reset_n, OUTPUT);
+      reset();
+
+      // wait 10 ms, then take the BM62 out of reset
+      delay(10);
+      enable();
+      
+      // initialize the BM62 programming sense line
+      pinMode(prgm_sense_n, INPUT);
+
+      // determine if the BM62 is being programmed; if so, take a nap
+      isProgramMode();
+
+      // input for determining if a successful A2DP connection active
+      pinMode(ind_a2dp_n, INPUT_PULLUP);
+
+      if (initSerialPort) {
+        // initialize the UART port to talk to the BM62
+        Serial.begin(SERIAL_BAUD_RATE, SERIAL_8N1);
+      }
+    }
+
+
+    bool isConnected(void) {
+      // query state of BM62 IND_A2DP_N pin and return FALSE if no active A2DP connection
+      return (bool)!digitalRead(ind_a2dp_n);
+    }
+
+
+    void reset(void) {
+      // set BM62 reset status, active-low signal so LOW puts device in reset
+      digitalWrite(reset_n, LOW);
+    }
+
+
+    void play(void) {
+      // start playback from bluetooth-connected media device
+      if (isConnected()) {
+        writeMediaCommand(BM62_Play);
+      }
+    }
+
+
+    void pause(void) {
+      // pause playback from bluetooth-connected media device
+      if (isConnected()) {
+        writeMediaCommand(BM62_Pause);
+      }
+    }
+
+
+    void stop(void) {
+      // stop playback from bluetooth-connected media device
+      if (isConnected()) {
+        writeMediaCommand(BM62_Stop);
+      }
+    }
+
+
+    void prev(void) {
+      // go to previous track on bluetooth-connected media device
+      if (isConnected()) {
+        writeMediaCommand(BM62_Prev_Track);
+      }
+    }
+
+
+    void next(void) {
+      // go to next track on bluetooth-connected media device
+      if (isConnected()) {
+        writeMediaCommand(BM62_Next_Track);
+      }
+    }
+
   private:
     #include <avr/sleep.h>
-    #include "parameters.h"  
 
     #ifndef BYTE_COUNT_MEDIA_COMMAND
       #define BYTE_COUNT_MEDIA_COMMAND (uint8_t)7
@@ -31,10 +123,14 @@ class BM62 {
       #define BYTE_COUNT_MEDIA_INSTRUCTION (uint8_t)3
     #endif
     #ifndef SERIAL_BAUD_RATE
+      // this must be 57600 for the BM62 but may be defined elsewhere
       #define SERIAL_BAUD_RATE (uint16_t)57600
     #endif
 
     bool initSerialPort;
+    uint8_t prgm_sense_n;
+    uint8_t reset_n;
+    uint8_t ind_a2dp_n;
 
     // BM62 UART commands for media playback control
     uint8_t BM62_Media_Command[BYTE_COUNT_MEDIA_COMMAND] =
@@ -87,7 +183,7 @@ class BM62 {
 
     // check if the BM62 programming pin is pulled low
     void isProgramMode(void) {
-      if (!digitalRead(PRGM_SENSE_N)) {
+      if (!digitalRead(prgm_sense_n)) {
         set_sleep_mode(SLEEP_MODE_PWR_DOWN);  // set sleep mode to power down
         cli();                                // globally disable interrupts
         sleep_enable();                       // set sleep bit
@@ -104,96 +200,5 @@ class BM62 {
         uint8_t mediaCommand[BYTE_COUNT_MEDIA_COMMAND];
         buildMediaCommand(mediaCommand, (uint8_t *)instruction);
         Serial.write(mediaCommand, BYTE_COUNT_MEDIA_COMMAND);
-    }
-
-
-  public:
-    BM62(bool initSerialPort) {
-      // Use 'this->' to make the difference between the 'pin' 
-      // attribute of the class and the local variable
-      this->initSerialPort = initSerialPort;
-    }
-
-
-    void enable(void) {
-      // set BM62 reset status, active-low signal so HIGH enables device
-      digitalWrite(RST_N, HIGH);
-    }
-
-
-    void init(void) {
-      // initialize the BM62 reset line and ensure reset is asserted
-      pinMode(RST_N, OUTPUT);
-      reset();
-
-      // wait 10 ms, then take the BM62 out of reset
-      delay(10);
-      enable();
-      
-      // initialize the BM62 programming sense line
-      pinMode(PRGM_SENSE_N, INPUT);
-
-      // determine if the BM62 is being programmed; if so, take a nap
-      isProgramMode();
-
-      // input for determining if a successful A2DP connection active
-      pinMode(IND_A2DP_N, INPUT_PULLUP);
-
-      if (initSerialPort) {
-        // initialize the UART port to talk to the BM62
-        Serial.begin(SERIAL_BAUD_RATE, SERIAL_8N1);
-      }
-    }
-
-
-    bool isConnected(void) {
-      // query state of BM62 IND_A2DP_N pin and return FALSE if no active A2DP connection
-      return (bool)!digitalRead(IND_A2DP_N);
-    }
-
-
-    void reset(void) {
-      // set BM62 reset status, active-low signal so LOW puts device in reset
-      digitalWrite(RST_N, LOW);
-    }
-
-
-    void play(void) {
-      // start playback from bluetooth-connected media device
-      if (isConnected()) {
-        writeMediaCommand(BM62_Play);
-      }
-    }
-
-
-    void pause(void) {
-      // pause playback from bluetooth-connected media device
-      if (isConnected()) {
-        writeMediaCommand(BM62_Pause);
-      }
-    }
-
-
-    void stop(void) {
-      // stop playback from bluetooth-connected media device
-      if (isConnected()) {
-        writeMediaCommand(BM62_Stop);
-      }
-    }
-
-
-    void prev(void) {
-      // go to previous track on bluetooth-connected media device
-      if (isConnected()) {
-        writeMediaCommand(BM62_Prev_Track);
-      }
-    }
-
-
-    void next(void) {
-      // go to next track on bluetooth-connected media device
-      if (isConnected()) {
-        writeMediaCommand(BM62_Next_Track);
-      }
     }
 };

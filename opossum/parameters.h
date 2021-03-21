@@ -36,7 +36,7 @@
 
   // define the analogRead pins according to the schematic net name
   #define VOLUME (uint8_t)0
-  #define DCOUT  (uint8_t)1
+  #define DCOUT  (uint8_t)A1
 
   // time in ms between audio input level reads
   #define AUDIO_READ_INTERVAL (uint16_t)100
