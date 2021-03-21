@@ -30,7 +30,7 @@ class BM62 {
 
     void enable(void) {
       // set BM62 reset status, active-low signal so HIGH enables device
-      digitalWrite(reset_n, LOW);
+      digitalWrite(reset_n, HIGH);
     }
 
 
@@ -67,7 +67,7 @@ class BM62 {
 
     void reset(void) {
       // set BM62 reset status, active-low signal so LOW puts device in reset
-      digitalWrite(reset_n, HIGH);
+      digitalWrite(reset_n, LOW);
     }
 
 
