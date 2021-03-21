@@ -17,36 +17,33 @@
  */
 
 class MSGEQ7 {
-  private:
-    #include "parameters.h"
-
-    bool isInputPullup;
-
-
   public:
-    MSGEQ7(bool isInputPullup) {
+    MSGEQ7(uint8_t strobe, uint8_t output, uint8_t reset, bool isInputPullup) {
       // Use 'this->' to make the difference between the 'pin' 
       // attribute of the class and the local variable
+      this->strobe = strobe;
+      this->output = output;
+      this->reset = reset;
       this->isInputPullup = isInputPullup;
     }
 
 
     void init(void) {
       // initialize the MSGEQ7 reset and strobe signals
-      pinMode(STROBE, OUTPUT);
-      pinMode(RESET,  OUTPUT);
+      pinMode(strobe, OUTPUT);
+      pinMode(reset,  OUTPUT);
 
       // set MSGEQ7 strobe low, and reset high (put device in standby)
-      digitalWrite(STROBE, LOW);
-      digitalWrite(RESET, HIGH);
+      digitalWrite(strobe, LOW);
+      digitalWrite(reset, HIGH);
 
       if (isInputPullup) {
         // initialize analog input 1 with internal pullup active
-        digitalWrite(A1, INPUT_PULLUP);
+        digitalWrite(output, INPUT_PULLUP);
       }
       else {
         // initialize analog input 1 without internal pullup active
-        digitalWrite(A1, INPUT);
+        digitalWrite(output, INPUT);
       }
     }
 
@@ -54,25 +51,25 @@ class MSGEQ7 {
     void read(uint16_t *levelRead) {
       // read back spectral band data from the MSGEQ7
       // start by setting RESET pin low to enable output
-      digitalWrite(RESET, LOW);
+      digitalWrite(reset, LOW);
       delayMicroseconds(100);
 
       // pulse STROBE pin to read all 7 frequency bands
       for(uint8_t k = 0; k < 7; k++) {
         // set STROBE pin low to enable output
-        digitalWrite(STROBE, LOW);
+        digitalWrite(strobe, LOW);
         delayMicroseconds(65);
 
         // read signal band level, account for later loudness adj.
-        levelRead[k] = analogRead(DCOUT) << 3;
+        levelRead[k] = analogRead(output) << 3;
 
         // set STROBE pin high again to prepare for next band reading
-        digitalWrite(STROBE, HIGH);
+        digitalWrite(strobe, HIGH);
         delayMicroseconds(35);
       }
 
       // set RESET high again to reset MSGEQ7 multiplexer
-      digitalWrite(RESET, HIGH);
+      digitalWrite(reset, HIGH);
 
       // spectral band adj. (very) loosely based on ISO 226:2003 [60 phons]
       levelRead[0] = levelRead[0] >> 3;   //   63 Hz
@@ -95,4 +92,11 @@ class MSGEQ7 {
       // much faster than divide-by-7, accurate to 7.00
       return (sum * 585L) >> 12;
     }
+
+
+  private:
+    bool isInputPullup;
+    uint8_t output;
+    uint8_t reset;
+    uint8_t strobe;
 };
