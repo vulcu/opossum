@@ -16,10 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "parameters.h"
-
 class MSGEQ7 {
   private:
+    #include "parameters.h"
+
     bool isInputPullup;
 
 

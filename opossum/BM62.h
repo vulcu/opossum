@@ -16,11 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <avr/sleep.h>
-#include "parameters.h"
-
 class BM62 {
   private:
+    #include <avr/sleep.h>
+    #include "parameters.h"  
+
     #ifndef BYTE_COUNT_MEDIA_COMMAND
       #define BYTE_COUNT_MEDIA_COMMAND (uint8_t)7
     #endif
@@ -34,9 +34,7 @@ class BM62 {
       #define SERIAL_BAUD_RATE (uint16_t)57600
     #endif
 
-
     bool initSerialPort;
-
 
     // BM62 UART commands for media playback control
     uint8_t BM62_Media_Command[BYTE_COUNT_MEDIA_COMMAND] =

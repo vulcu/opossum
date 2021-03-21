@@ -212,11 +212,8 @@ void setup() {
 
   // initialize remaining digital pin modes
   pinMode(S2_INT,     INPUT);
-  //pinMode(IND_A2DP_N, INPUT_PULLUP);
   pinMode(S2_LEDPWM,  OUTPUT);
   pinMode(S1_LEDPWM,  OUTPUT);
-  //pinMode(STROBE,     OUTPUT);
-  //pinMode(RESET,      OUTPUT);
   pinMode(MUTE,       OUTPUT);
   pinMode(SHDN,       OUTPUT);  
 
