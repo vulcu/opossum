@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDE_MSGEQ7_H
-#define INCLUDE_MSGEQ7_H
+#ifndef __MSGEQ7_H__
+#define __MSGEQ7_H__
 
   class MSGEQ7 {
     public:

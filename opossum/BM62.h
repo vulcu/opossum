@@ -16,12 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDE_BM62_H
-#define INCLUDE_BM62_H
+#ifndef __BM62_H__
+#define __BM62_H__
 
-  #ifndef INCLUDE_AVR_SLEEP_H
-    #include <avr/sleep.h>
-  #endif
+  #include <avr/sleep.h>
 
   #ifndef BYTE_COUNT_MEDIA_COMMAND
     #define BYTE_COUNT_MEDIA_COMMAND (uint8_t)7
