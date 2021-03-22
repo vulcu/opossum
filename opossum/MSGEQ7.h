@@ -21,24 +21,24 @@
 
   class MSGEQ7 {
     public:
-      MSGEQ7(uint8_t strobe, uint8_t output, uint8_t reset, bool isInputPullup) {
+      MSGEQ7(uint8_t strobe_p, uint8_t output, uint8_t reset_p, bool isInputPullup) {
         // Use 'this->' to make the difference between the 'pin' 
         // attribute of the class and the local variable
-        this->strobe = strobe;
+        this->strobe_p = strobe_p;
         this->output = output;
-        this->reset = reset;
+        this->reset_p = reset_p;
         this->isInputPullup = isInputPullup;
       }
 
 
       void init(void) {
         // initialize the MSGEQ7 reset and strobe signals
-        pinMode(strobe, OUTPUT);
-        pinMode(reset,  OUTPUT);
+        pinMode(strobe_p, OUTPUT);
+        pinMode(reset_p,  OUTPUT);
 
         // set MSGEQ7 strobe low, and reset high (put device in standby)
-        digitalWrite(strobe, LOW);
-        digitalWrite(reset, HIGH);
+        digitalWrite(strobe_p, LOW);
+        digitalWrite(reset_p, HIGH);
 
         if (isInputPullup) {
           // initialize analog input 1 with internal pullup active
@@ -54,25 +54,25 @@
       void read(uint16_t *levelRead) {
         // read back spectral band data from the MSGEQ7
         // start by setting RESET pin low to enable output
-        digitalWrite(reset, LOW);
+        digitalWrite(reset_p, LOW);
         delayMicroseconds(100);
 
         // pulse STROBE pin to read all 7 frequency bands
         for(uint8_t k = 0; k < 7; k++) {
           // set STROBE pin low to enable output
-          digitalWrite(strobe, LOW);
+          digitalWrite(strobe_p, LOW);
           delayMicroseconds(65);
 
           // read signal band level, account for later loudness adj.
           levelRead[k] = analogRead(output) << 3;
 
           // set STROBE pin high again to prepare for next band reading
-          digitalWrite(strobe, HIGH);
+          digitalWrite(strobe_p, HIGH);
           delayMicroseconds(35);
         }
 
         // set RESET high again to reset MSGEQ7 multiplexer
-        digitalWrite(reset, HIGH);
+        digitalWrite(reset_p, HIGH);
 
         // spectral band adj. (very) loosely based on ISO 226:2003 [60 phons]
         levelRead[0] = levelRead[0] >> 3;   //   63 Hz
@@ -100,8 +100,8 @@
     private:
       bool isInputPullup;
       uint8_t output;
-      uint8_t reset;
-      uint8_t strobe;
+      uint8_t reset_p;
+      uint8_t strobe_p;
   };
 
 #endif
