@@ -24,19 +24,19 @@
 
   class MAX9744 {
     public:
-      MAX9744(uint8_t i2c_addr, uint8_t mute_pin, uint8_t shutdown_pin, bool init_twi) {
+      MAX9744(uint8_t i2c_addr, uint8_t mute_p, uint8_t shutdown_n, bool init_twi) {
         // Use 'this->' to make the difference between the 'pin' 
         // attribute of the class and the local variable
         this->i2c_addr = i2c_addr;
-        this->mute_pin = mute_pin;
-        this->shutdown_pin = shutdown_pin;
+        this->mute_p = mute_p;
+        this->shutdown_n = shutdown_n;
         this->init_twi = init_twi;
       }
 
       void init(void) {
         // initialize the MAX9744 mute and shutdown signals
-        pinMode(mute_pin, OUTPUT);
-        pinMode(shutdown_pin, OUTPUT);
+        pinMode(mute_p, OUTPUT);
+        pinMode(shutdown_n, OUTPUT);
 
         // mute the MAX9744 then take it out of shutdown
         mute();
@@ -55,7 +55,7 @@
 
       void enable(void) {
         // enable the MAX9744 by taking it out of shutdown (HIGH)
-        digitalWrite(shutdown_pin, (HIGH));
+        digitalWrite(shutdown_n, HIGH);
       }
 
       void invertMuteLogic(bool invert_mute) {
@@ -64,27 +64,27 @@
       }
 
       void mute(void) {
-        // mute the MAX9744 output (LOW)
+        // mute the MAX9744 output (HIGH)
         if (invert_mute) {
-          digitalWrite(shutdown_pin, HIGH);
+          digitalWrite(mute_p, LOW);
         }
         else {
-          digitalWrite(shutdown_pin, LOW);
+          digitalWrite(mute_p, HIGH);
         }
       }
 
       void shutdown(void) {
         // disable the MAX9744 by putting it into shutdown (LOW)
-        digitalWrite(shutdown_pin, LOW);
+        digitalWrite(shutdown_n, LOW);
       }
 
       void unmute(void) {
-        // unmute the MAX9744 output (HIGH)
+        // unmute the MAX9744 output (LOW)
         if (invert_mute) {
-          digitalWrite(shutdown_pin, LOW);
+          digitalWrite(mute_p, HIGH);
         }
         else {
-          digitalWrite(shutdown_pin, HIGH);
+          digitalWrite(mute_p, LOW);
         }
       }
 
@@ -107,8 +107,8 @@
       bool init_twi;
       bool invert_mute = false;
       uint8_t i2c_addr;
-      uint8_t mute_pin;
-      uint8_t shutdown_pin;
+      uint8_t mute_p;
+      uint8_t shutdown_n;
 
       // MAX9744 amplifier gain levels (dB), multiplied
       // by 10x to allow PROGMEM storage as int16_t
