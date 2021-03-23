@@ -18,12 +18,11 @@
 
 // include libraries for PROGMEM, SLEEP, & I2C
 #include <avr/pgmspace.h>
-#include <Wire.h>
 
 #include "opossum/parameters.h"
 #include "opossum/BM62.h"
+#include "opossum/MAX9744.h"
 #include "opossum/MSGEQ7.h"
-#include "opossum/drivers.h"
 
 // comment to deactivate UART debug mode
 #define DEBUG
@@ -73,8 +72,14 @@ BM62 bluetooth(PRGM_SENSE_N, RST_N, IND_A2DP_N, BM62_initSerialPort);
 // define if analog input pullup should be set active when MSGEQ7 is init
 bool MSGEQ7_isInputPullup = false;
 
-// create BM62 driver object
+// create MSGEQ7 driver object
 MSGEQ7 spectrum(STROBE, OUTPUT, RESET, MSGEQ7_isInputPullup);
+
+// define if analog input pullup should be set active when MSGEQ7 is init
+bool MAX9744_init_TWI = true;
+
+// create MAX9744 driver object
+MAX9744 amplifier(MAX9744_I2CADDR, MUTE, SHDN, MAX9744_init_TWI);
 
 
 // wait for BM62 to indicate a successful A2DP connection
@@ -209,41 +214,32 @@ void setup() {
   // initialize the BM62 bluetooth device
   bluetooth.init();
 
+  // initialize the MMAX9744
+  amplifier.invertMuteLogic(true);
+  amplifier.init();
+
+  // initialize the MSGEQ7
+  spectrum.init();
+
   // initialize remaining digital pin modes
   pinMode(S2_INT,     INPUT);
   pinMode(S2_LEDPWM,  OUTPUT);
-  pinMode(S1_LEDPWM,  OUTPUT);
-  pinMode(MUTE,       OUTPUT);
-  pinMode(SHDN,       OUTPUT);  
+  pinMode(S1_LEDPWM,  OUTPUT); 
 
   // ensure both LEDs are turned off
   digitalWrite(S1_LEDPWM, LOW);
   digitalWrite(S2_LEDPWM, LOW);
 
-  // initialize the MSGEQ7
-  spectrum.init();
-
-  // mute the MAX9744 then take it out of shutdown
-  digitalWrite(MUTE, LOW);
-  digitalWrite(SHDN, HIGH);
-
   // wait for the BM62 to indicate a successful A2DP connection
   waitForConnection();
   bluetooth.stop();
-
-  // initialize Wire library and set clock rate to 400 kHz
-  Wire.begin();
-  Wire.setClock(400000L);
   
-  vol = analogRead(VOLUME); // read Channel A0
-
-  // unmute MAX9744 and configure initial amplifier volume parameters
-  Wire.beginTransmission(MAX9744_I2CADDR);
-  Wire.write(lowByte(vol >> 4));
-  Wire.endTransmission();
+  // set initial MAX9744 amplifier volume parameter and unmute
+  vol = analogRead(VOLUME);             // read Volume Control
+  amplifier.volume(lowByte(vol >> 4));
   volOut = vol;
   updateVolumeRange();
-  digitalWrite(MUTE, HIGH);
+  amplifier.unmute();
   
   // initialize levelBuf to 'zero-signal' value
   for (uint8_t k = 0; k < 32; k++) {
@@ -292,9 +288,7 @@ void loop() {
   
   // ignore two LSB to filter noise and prevent output level oscillations
   if (abs(volOut - vol) > 4) {
-    Wire.beginTransmission(MAX9744_I2CADDR);
-    Wire.write(lowByte(volOut >> 4));
-    Wire.endTransmission();
+    amplifier.volume(lowByte(volOut >> 4));
     volOut = vol;
     updateVolumeRange();
     baseLevel = levelOut;

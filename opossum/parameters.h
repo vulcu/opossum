@@ -16,11 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDE_PARAMETERS_H
-#define INCLUDE_PARAMETERS_H
+#ifndef __PARAMETERS_H__
+#define __PARAMETERS_H__
 
   // define the MAX9744 I2C address, default is 0x4B
   #define MAX9744_I2CADDR ((uint8_t)0x4B)
+
+  // define two wire interface (I2C) clock rate
+  #define TWI_CLOCK_RATE (int32_t)400000
 
   // define the digitalOut pins according to the schematic net name
   #define S2_INT       (uint8_t)3
