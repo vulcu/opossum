@@ -73,7 +73,7 @@ BM62 bluetooth(PRGM_SENSE_N, RST_N, IND_A2DP_N, BM62_initSerialPort);
 bool MSGEQ7_isInputPullup = false;
 
 // create MSGEQ7 driver object
-MSGEQ7 spectrum(STROBE, OUTPUT, RESET, MSGEQ7_isInputPullup);
+MSGEQ7 spectrum(STROBE, DC_OUT, RESET, MSGEQ7_isInputPullup);
 
 // define if analog input pullup should be set active when MSGEQ7 is init
 bool MAX9744_init_TWI = true;
