@@ -214,6 +214,13 @@ void setup() {
   // initialize the BM62 bluetooth device
   bluetooth.init();
 
+  // initialize the MMAX9744
+  amplifier.invertMuteLogic(true);
+  amplifier.init();
+
+  // initialize the MSGEQ7
+  spectrum.init();
+
   // initialize remaining digital pin modes
   pinMode(S2_INT,     INPUT);
   pinMode(S2_LEDPWM,  OUTPUT);
@@ -223,31 +230,15 @@ void setup() {
   digitalWrite(S1_LEDPWM, LOW);
   digitalWrite(S2_LEDPWM, LOW);
 
-  // initialize the MSGEQ7
-  spectrum.init();
-
-  // initialize the MMAX9744
-  amplifier.init();
-  amplifier.invertMuteLogic(true);
-
   // wait for the BM62 to indicate a successful A2DP connection
   waitForConnection();
   bluetooth.stop();
-
-  // initialize Wire library and set clock rate to 400 kHz
-  //Wire.begin();
-  //Wire.setClock(400000L);
   
-  vol = analogRead(VOLUME); // read Channel A0
-
-  // unmute MAX9744 and configure initial amplifier volume parameters
-  //Wire.beginTransmission(MAX9744_I2CADDR);
-  //Wire.write(lowByte(vol >> 4));
-  //Wire.endTransmission();
+  // set initial MAX9744 amplifier volume parameter and unmute
+  vol = analogRead(VOLUME);             // read Volume Control
   amplifier.volume(lowByte(vol >> 4));
   volOut = vol;
   updateVolumeRange();
-  //digitalWrite(MUTE, HIGH);
   amplifier.unmute();
   
   // initialize levelBuf to 'zero-signal' value
@@ -297,9 +288,6 @@ void loop() {
   
   // ignore two LSB to filter noise and prevent output level oscillations
   if (abs(volOut - vol) > 4) {
-    //Wire.beginTransmission(MAX9744_I2CADDR);
-    //Wire.write(lowByte(volOut >> 4));
-    //Wire.endTransmission();
     amplifier.volume(lowByte(volOut >> 4));
     volOut = vol;
     updateVolumeRange();
