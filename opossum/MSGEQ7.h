@@ -21,11 +21,11 @@
 
   class MSGEQ7 {
     public:
-      MSGEQ7(uint8_t strobe_p, uint8_t output, uint8_t reset_p, bool isInputPullup) {
+      MSGEQ7(uint8_t strobe_p, uint8_t dc_out, uint8_t reset_p, bool isInputPullup) {
         // Use 'this->' to make the difference between the 'pin' 
         // attribute of the class and the local variable
         this->strobe_p = strobe_p;
-        this->output = output;
+        this->dc_out = dc_out;
         this->reset_p = reset_p;
         this->isInputPullup = isInputPullup;
       }
@@ -42,11 +42,11 @@
 
         if (isInputPullup) {
           // initialize analog input 1 with internal pullup active
-          digitalWrite(output, INPUT_PULLUP);
+          digitalWrite(dc_out, INPUT_PULLUP);
         }
         else {
           // initialize analog input 1 without internal pullup active
-          digitalWrite(output, INPUT);
+          digitalWrite(dc_out, INPUT);
         }
       }
 
@@ -64,7 +64,7 @@
           delayMicroseconds(65);
 
           // read signal band level, account for later loudness adj.
-          levelRead[k] = analogRead(output) << 3;
+          levelRead[k] = analogRead(dc_out) << 3;
 
           // set STROBE pin high again to prepare for next band reading
           digitalWrite(strobe_p, HIGH);
@@ -99,7 +99,7 @@
 
     private:
       bool isInputPullup;
-      uint8_t output;
+      uint8_t dc_out;
       uint8_t reset_p;
       uint8_t strobe_p;
   };

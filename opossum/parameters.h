@@ -22,9 +22,6 @@
   // define the MAX9744 I2C address, default is 0x4B
   #define MAX9744_I2CADDR ((uint8_t)0x4B)
 
-  // define two wire interface (I2C) clock rate
-  #define TWI_CLOCK_RATE (int32_t)400000
-
   // define the digitalOut pins according to the schematic net name
   #define S2_INT       (uint8_t)3
   #define IND_A2DP_N   (uint8_t)4
@@ -39,7 +36,7 @@
 
   // define the analogRead pins according to the schematic net name
   #define VOLUME (uint8_t)0
-  #define DCOUT  (uint8_t)A1
+  #define DC_OUT (uint8_t)A1
 
   // time in ms between audio input level reads
   #define AUDIO_READ_INTERVAL (uint16_t)100
@@ -51,6 +48,9 @@
   #define S2_PWM_MIN (uint8_t)20          // S2 minimum PWM level
   #define S2_PWM_MAX (uint8_t)255         // S2 maximum PWM level
   #define S2_PWM_DEF (uint8_t)200         // S2 default PWM level
+
+  // define two wire interface (I2C) clock rate
+  #define TWI_CLOCK_RATE (int32_t)400000
 
   // serial UART baud rate, must be 57600 for communication with BM62
   #define SERIAL_BAUD_RATE (uint16_t)57600
