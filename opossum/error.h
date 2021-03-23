@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ERROR_H
-#define ERROR_H
+#ifndef __OPOSSUM_ERROR_H__
+#define __OPOSSUM_ERROR_H__
 
   #include <avr/pgmspace.h>
   #include "parameters.h"

@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef MATH_H
-#define MATH_H
+#ifndef __OPOSSUM_MATH_H__
+#define __OPOSSUM_MATH_H__
 
   #include "parameters.h"
 
