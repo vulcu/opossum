@@ -46,13 +46,13 @@
 
   class MAX9744 {
     public:
-      MAX9744(uint8_t i2c_addr, uint8_t mute_p, uint8_t shutdown_n, bool init_twi) {
+      MAX9744(uint8_t i2c_addr, uint8_t mute_p, uint8_t shutdown_n, TwoWire* wire) {
         // Use 'this->' to make the difference between the 'pin' 
         // attribute of the class and the local variable
         this->i2c_addr = i2c_addr;
         this->mute_p = mute_p;
         this->shutdown_n = shutdown_n;
-        this->init_twi = init_twi;
+        this->wire = wire;
       }
 
       void init(void) {
@@ -63,16 +63,6 @@
         // mute the MAX9744 then take it out of shutdown
         mute();
         enable();
-
-        if (init_twi) {
-          // do this check so that Wire only gets initialized once
-          //if (TWCR ^ (0x01 << TWEN)) {
-            // if TWI not enabled, initialize Wire library
-            Wire.begin();
-          //}
-          // set TWI clock rate (default is 400000L)
-          Wire.setClock(TWI_CLOCK_RATE);
-        }
       }
 
       void enable(void) {
@@ -112,25 +102,20 @@
 
       void volume(uint8_t value) {
         // initialize the MSGEQ7 reset and strobe signals
-        // & (TWCR & (0x01 << TWEN)))
-        if (value < 64) {
-          Wire.beginTransmission(i2c_addr);
-            Wire.write(value);
-          Wire.endTransmission();
+        if ((value < 64) & (TWCR != 0x00)) {
+          wire->beginTransmission(i2c_addr);
+            wire->write(value);
+          wire->endTransmission();
         }
       }
 
 
     private:
-      #ifndef TWI_CLOCK_RATE
-        #define TWI_CLOCK_RATE (int32_t)400000
-      #endif
-
-      bool init_twi;
       bool invert_mute = false;
       uint8_t i2c_addr;
       uint8_t mute_p;
       uint8_t shutdown_n;
+      TwoWire* wire;
   };
 
 #endif

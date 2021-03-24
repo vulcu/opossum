@@ -67,7 +67,7 @@ volatile uint32_t S2DebounceStart, S2DebounceStop = 0;
 bool BM62_initSerialPort = true;
 
 // create BM62 driver object
-BM62 bluetooth(PRGM_SENSE_N, RST_N, IND_A2DP_N, BM62_initSerialPort);
+BM62 bluetooth(PRGM_SENSE_N, RST_N, IND_A2DP_N, &Serial);
 
 // define if analog input pullup should be set active when MSGEQ7 is init
 bool MSGEQ7_isInputPullup = false;
@@ -79,7 +79,7 @@ MSGEQ7 spectrum(STROBE, DC_OUT, RESET, MSGEQ7_isInputPullup);
 bool MAX9744_init_TWI = true;
 
 // create MAX9744 driver object
-MAX9744 amplifier(MAX9744_I2CADDR, MUTE, SHDN, MAX9744_init_TWI);
+MAX9744 amplifier(MAX9744_I2CADDR, MUTE, SHDN, &Wire);
 
 
 // wait for BM62 to indicate a successful A2DP connection
@@ -212,9 +212,12 @@ void updateVolumeRange(void) {
 // set up and configure the MCU, BM62, and MSGEQ7
 void setup() {
   // initialize the BM62 bluetooth device
+  Serial.begin(SERIAL_BAUD_RATE, SERIAL_8N1);
   bluetooth.init();
 
   // initialize the MMAX9744
+  Wire.begin();
+  Wire.setClock(TWI_CLOCK_RATE);
   amplifier.invertMuteLogic(true);
   amplifier.init();
 
