@@ -21,6 +21,7 @@
 
 #include "opossum/parameters.h"
 #include "opossum/BM62.h"
+#include "opossum/userinterface.h"
 #include "opossum/MAX9744.h"
 #include "opossum/MSGEQ7.h"
 
@@ -37,9 +38,7 @@ const uint16_t dBCoefTable[25] PROGMEM =
   6492, 6876, 7284, 7715, 8173
 };
 
-// keep track of PWM level and direction for each switch LED
-bool     S1_PWM_DIR, S2_PWM_DIR = HIGH;  // HIGH = rising, LOW = falling
-uint16_t S1_PWM_VAL, S2_PWM_VAL = 0;     // PWM analogWrite value
+
 
 // buffer index, volume, filtered volume, base level, present level
 uint8_t  bufferIndx = 0;
@@ -81,9 +80,18 @@ bool MAX9744_init_TWI = true;
 // create MAX9744 driver object
 MAX9744 amplifier(MAX9744_I2CADDR, MUTE, SHDN, MAX9744_init_TWI);
 
+// create LED and LED+button objects for S1 and S2 user interface switches
+LED led_SW1(S1_LEDPWM);
+LED led_SW2(S1_LEDPWM);
+LEDBUTTON ledbutton_SW2(S2_INT, led_SW2);
+
 
 // wait for BM62 to indicate a successful A2DP connection
 void waitForConnection(void) {
+  // keep track of PWM level and direction for each switch LED
+  bool     S1_PWM_DIR, S2_PWM_DIR = HIGH;  // HIGH = rising, LOW = falling
+  uint16_t S1_PWM_VAL, S2_PWM_VAL = 0;     // PWM analogWrite value
+
   while (!bluetooth.isConnected()) {
     // get the elapsed time, in milliseconds, since power-on
     uint32_t currentMillis = millis();
@@ -99,7 +107,7 @@ void waitForConnection(void) {
         }
         else {
           // otherwise, set LED brightness and increment
-          analogWrite(S1_LEDPWM, S1_PWM_VAL);
+          led_SW1.brightness(S1_PWM_VAL);
           S1_PWM_VAL += 5;
         }
       }
@@ -110,7 +118,7 @@ void waitForConnection(void) {
         }
         else {
           // otherwise, set LED brightness and decrement
-          analogWrite(S1_LEDPWM, S1_PWM_VAL);
+          led_SW1.brightness(S1_PWM_VAL);
           S1_PWM_VAL -= 5;
         }
       }
@@ -118,25 +126,25 @@ void waitForConnection(void) {
   }
 
   // turn off the LED and wait, helps distinguish next section
-  digitalWrite(S1_LEDPWM, LOW);
+  led_SW1.off();
   delay(100);
 
   // pulse quickly twice to indicate a successful connection
   S1_PWM_DIR = HIGH;          // reset the S1 PWM direction
   for (uint8_t k = 0; k < 2; k++) {
     for (uint16_t m = S1_PWM_MIN; m <= S1_PWM_MAX; m += 4) {
-      analogWrite(S1_LEDPWM, m);
+      led_SW1.brightness(m);
       delay(2);
     }
     for (uint16_t m = S1_PWM_MAX; m >= S1_PWM_MIN; m -= 4) {
-      analogWrite(S1_LEDPWM, m);
+      led_SW1.brightness(m);
       delay(2);
     }
   }
   delay(250);
 
   // set the S1 LED brightness to the default 'on' value
-  analogWrite(S1_LEDPWM, S1_PWM_DEF);
+  led_SW1.brightness(S1_PWM_DEF);
 
   // reset previousMillis to the initial value
   previousMillis = 0;
@@ -221,14 +229,9 @@ void setup() {
   // initialize the MSGEQ7
   spectrum.init();
 
-  // initialize remaining digital pin modes
-  pinMode(S2_INT,     INPUT);
-  pinMode(S2_LEDPWM,  OUTPUT);
-  pinMode(S1_LEDPWM,  OUTPUT); 
-
-  // ensure both LEDs are turned off
-  digitalWrite(S1_LEDPWM, LOW);
-  digitalWrite(S2_LEDPWM, LOW);
+  // initialize S1 and S2 switches and attach their LEDs to them
+  led_SW1.init();
+  ledbutton_SW2.init();
 
   // wait for the BM62 to indicate a successful A2DP connection
   waitForConnection();
@@ -238,7 +241,7 @@ void setup() {
   vol = analogRead(VOLUME);             // read Volume Control
   amplifier.volume(lowByte(vol >> 4));
   volOut = vol;
-  updateVolumeRange();
+  void updateVolumeRange();
   amplifier.unmute();
   
   // initialize levelBuf to 'zero-signal' value
