@@ -30,20 +30,17 @@
   #ifndef BYTE_COUNT_MEDIA_INSTRUCTION
     #define BYTE_COUNT_MEDIA_INSTRUCTION (uint8_t)3
   #endif
-  #ifndef SERIAL_BAUD_RATE
-    // this must be 57600 for the BM62 but may be defined elsewhere
-    #define SERIAL_BAUD_RATE (uint16_t)57600
-  #endif
 
   class BM62 {
     public:
-      BM62(uint8_t prgm_sense_n, uint8_t reset_n, uint8_t ind_a2dp_n, bool initSerialPort) {
+      BM62(uint8_t prgm_sense_n, uint8_t reset_n, uint8_t ind_a2dp_n, 
+          HardwareSerial* hserial) {
         // Use 'this->' to make the difference between the 'pin' 
         // attribute of the class and the local variable
         this->prgm_sense_n = prgm_sense_n;
         this->reset_n = reset_n;
         this->ind_a2dp_n = ind_a2dp_n;
-        this->initSerialPort = initSerialPort;
+        this->hserial = hserial;
       }
 
 
@@ -70,16 +67,12 @@
 
         // input for determining if a successful A2DP connection active
         pinMode(ind_a2dp_n, INPUT_PULLUP);
-
-        if (initSerialPort) {
-          // initialize the UART port to talk to the BM62
-          Serial.begin(SERIAL_BAUD_RATE, SERIAL_8N1);
-        }
       }
 
 
       bool isConnected(void) {
-        // query state of BM62 IND_A2DP_N pin and return FALSE if no active A2DP connection
+        // query state of BM62 IND_A2DP_N pin and return FALSE if no 
+        // active A2DP connection is available (indicated by a HIGH state)
         return (bool)!digitalRead(ind_a2dp_n);
       }
 
@@ -130,10 +123,10 @@
       }
 
     private:
-      bool initSerialPort;
       uint8_t prgm_sense_n;
       uint8_t reset_n;
       uint8_t ind_a2dp_n;
+      HardwareSerial* hserial;
 
       // BM62 UART commands for media playback control
       uint8_t BM62_Media_Command[BYTE_COUNT_MEDIA_COMMAND] =
@@ -202,7 +195,7 @@
       void writeMediaCommand(const uint8_t *instruction) {
           uint8_t mediaCommand[BYTE_COUNT_MEDIA_COMMAND];
           buildMediaCommand(mediaCommand, (uint8_t *)instruction);
-          Serial.write(mediaCommand, BYTE_COUNT_MEDIA_COMMAND);
+          hserial->write(mediaCommand, BYTE_COUNT_MEDIA_COMMAND);
       }
   };
 
