@@ -18,6 +18,7 @@
 
 // include libraries for PROGMEM, SLEEP, & I2C
 #include <avr/pgmspace.h>
+#include <TimerOne.h>
 
 #include "opossum/parameters.h"
 #include "opossum/BM62.h"
@@ -81,6 +82,10 @@ bool MAX9744_init_TWI = true;
 // create MAX9744 driver object
 MAX9744 amplifier(MAX9744_I2CADDR, MUTE, SHDN, &Wire);
 
+// create LED and LED+button objects for S1 and S2 user interface switches
+LED led_SW1(S1_LEDPWM);
+LED led_SW2(S1_LEDPWM);
+LEDBUTTON ledbutton_SW2(S2_INT, led_SW2);
 
 // wait for BM62 to indicate a successful A2DP connection
 void waitForConnection(void) {
@@ -137,9 +142,6 @@ void waitForConnection(void) {
 
   // set the S1 LED brightness to the default 'on' value
   analogWrite(S1_LEDPWM, S1_PWM_DEF);
-
-  // reset previousMillis to the initial value
-  previousMillis = 0;
 
   // wait 200 ms to avoid BM62 missing UART reads
   delay(200);
@@ -256,6 +258,8 @@ void setup() {
   // initialize base volume level and relative dB values
   baseLevel = levelOut;
   dBFastRelativeLevel();
+
+  attachInterrupt(digitalPinToInterrupt(S2_INT), ISR_BLOCK_S2, CHANGE);
 }
 
 
@@ -265,9 +269,13 @@ void loop() {
     waitForConnection();
     bluetooth.stop();
   }
-  
+
   // get the elapsed time, in millisecionds, since power-on
   uint32_t currentMillis = millis();
+
+  if (S2ButtonPressCount > 0) {
+    if(S2DebounceStart - currentMillis < S2)
+  }
   
   // read audio levels from MSGEQ7 only if enough time has passed
   if (currentMillis - previousMillis >= AUDIO_READ_INTERVAL) {

@@ -41,6 +41,9 @@
   // time in ms between audio input level reads
   #define AUDIO_READ_INTERVAL (uint16_t)100
 
+  // time in ms between audio input level reads
+  #define AUDIO_READ_INTERVAL (uint16_t)100
+
   // min, max, and default 'on' LED brightness values for each switch LED
   #define S1_PWM_MIN (uint8_t)20          // S1 minimum PWM level
   #define S1_PWM_MAX (uint8_t)255         // S1 maximum PWM level
