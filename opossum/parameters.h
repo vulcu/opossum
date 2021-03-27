@@ -23,10 +23,11 @@
   #define MAX9744_I2CADDR ((uint8_t)0x4B)
 
   // define the digitalOut pins according to the schematic net name
+  #define S1_INT       (int8_t) -1
   #define S2_INT       (uint8_t)3
   #define IND_A2DP_N   (uint8_t)4
-  #define S2_LEDPWM    (uint8_t)5
-  #define S1_LEDPWM    (uint8_t)6
+  #define S2_LEDPWM    (int8_t) 5
+  #define S1_LEDPWM    (int8_t) 6
   #define RST_N        (uint8_t)8
   #define STROBE       (uint8_t)9
   #define RESET        (uint8_t)10
