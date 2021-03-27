@@ -74,12 +74,6 @@
       const int8_t button_pin;
       uint8_t button_port_input_mode = INPUT;
 
-    protected:
-    //  virtual void attach(int8_t);
-    //  virtual void brightness(uint8_t);
-    //  virtual void off(void);
-    //  virtual void unattach(void);
-
     public:
       BUTTON(uint8_t button_pinAttachment) :
         button_pin(button_pinAttachment) {
@@ -124,7 +118,6 @@
         // class constructor
       }
     
-    protected:
       void attach(int8_t led_pin) {
         // attach an LED pin and configure the LED for use
         led.attach(led_pin);

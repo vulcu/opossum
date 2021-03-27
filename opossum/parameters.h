@@ -23,7 +23,6 @@
   #define MAX9744_I2CADDR ((uint8_t)0x4B)
 
   // define the digitalOut pins according to the schematic net name
-  #define S1_INT       (int8_t) -1
   #define S2_INT       (uint8_t)3
   #define IND_A2DP_N   (uint8_t)4
   #define S2_LEDPWM    (int8_t) 5
@@ -43,7 +42,10 @@
   #define AUDIO_READ_INTERVAL (uint16_t)100
 
   // time in ms between audio input level reads
-  #define AUDIO_READ_INTERVAL (uint16_t)100
+  #define S2_DEBOUNCE_MILLISECONDS (uint16_t)50
+
+  // time in ms between audio input level reads
+  #define S2_READTIME_MICROSECONDS (uint32_t)700000
 
   // min, max, and default 'on' LED brightness values for each switch LED
   #define S1_PWM_MIN (uint8_t)20          // S1 minimum PWM level
