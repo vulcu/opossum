@@ -61,7 +61,7 @@ volatile bool S2LedIsOn = LOW;
 
 // S2 interrupt debounce and timer values
 volatile bool S2_interruptEnabled, S2_buttonReadComplete = false;
-volatile uint8_t S2_buttonPressCount = 0;
+volatile uint8_t S2_buttonStateCount = 0;
 volatile uint32_t S2_debounceStart, S2_debounceStop = 0;
 
 // define if serial UART port should be initialized when BM62 is init
@@ -89,10 +89,10 @@ LEDBUTTON ledbutton_SW2(S2_INT, led_SW2);
 
 
 static void ISR_BLOCK_S2(void) {
-  if (S2_buttonPressCount == 0) {
+  if (S2_buttonStateCount == 0) {
     Timer1.attachInterrupt(timerCallback_SW2);
   }
-  S2_buttonPressCount += S2_buttonPressCount;
+  S2_buttonStateCount += S2_buttonStateCount;
   S2_debounceStart = millis();
   S2_debounceStop = S2_debounceStart + S2_DEBOUNCE_MILLISECONDS;
 }
@@ -101,7 +101,7 @@ static void ISR_BLOCK_S2(void) {
 static void timerCallback_SW2(void) {
   Timer1.detachInterrupt();
   detachInterrupt(digitalPinToInterrupt(S2_INT));
-  S2_buttonPressCount = 0;
+  S2_buttonStateCount = 0;
   S2_buttonReadComplete = true;
 }
 
@@ -251,7 +251,7 @@ void setup() {
 
   // initialize S1 and S2 switches and attach their LEDs to them
   led_SW1.init();
-  ledbutton_SW2.init();
+  ledbutton_SW2.enableInputPullup();
 
   // wait for the BM62 to indicate a successful A2DP connection
   waitForConnection();
@@ -292,7 +292,7 @@ void loop() {
   // get the elapsed time, in millisecionds, since power-on
   uint32_t currentMillis = millis();
 
-  if (S2_buttonPressCount > 0) {
+  if (S2_buttonStateCount > 0) {
     if(S2_debounceStart - currentMillis <= S2_DEBOUNCE_MILLISECONDS) {
       if (S2_interruptEnabled) {
         detachInterrupt(digitalPinToInterrupt(S2_INT));
@@ -304,7 +304,7 @@ void loop() {
   }
 
   if (S2_buttonReadComplete) {
-    for (uint8_t k = 0; k < S2_buttonPressCount; k++) {
+    for (uint8_t k = 0; k < S2_buttonStateCount; k++) {
       ledbutton_SW2.brightness(S2_PWM_DEF);
       delay(100);
       ledbutton_SW2.off();
