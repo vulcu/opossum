@@ -109,7 +109,7 @@
 #define __LEDBUTTON_H__
 
   class LEDBUTTON: public BUTTON {
-    LED &led;
+    LED led;
 
     public:
       LEDBUTTON(int8_t button_pinAttachment, LED &led_Attachment) :

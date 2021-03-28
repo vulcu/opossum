@@ -60,6 +60,7 @@ volatile bool functionFeatureIsEnabled = LOW;
 volatile bool S2LedIsOn = LOW;
 
 // S2 interrupt debounce and timer values
+const int16_t S2_INT = digitalPinToInterrupt((int16_t)S2_PIN);
 volatile bool S2_interruptEnabled, S2_buttonReadComplete = false;
 volatile uint8_t S2_buttonStateCount = 0;
 volatile uint32_t S2_debounceStart, S2_debounceStop = 0;
@@ -84,24 +85,24 @@ MAX9744 amplifier(MAX9744_I2CADDR, MUTE, SHDN, &Wire);
 
 // create LED and LED+button objects for S1 and S2 user interface switches
 LED led_SW1(S1_LEDPWM);
-LED led_SW2(S1_LEDPWM);
-LEDBUTTON ledbutton_SW2(S2_INT, led_SW2);
+LED led_SW2(S2_LEDPWM);
+LEDBUTTON ledbutton_SW2(S2_PIN, led_SW2);
 
 
 static void ISR_BLOCK_S2(void) {
+  detachInterrupt(S2_INT);
   if (S2_buttonStateCount == 0) {
     Timer1.attachInterrupt(timerCallback_SW2);
   }
-  S2_buttonStateCount += S2_buttonStateCount;
+  S2_buttonStateCount += 1;
   S2_debounceStart = millis();
   S2_debounceStop = S2_debounceStart + S2_DEBOUNCE_MILLISECONDS;
 }
 
 
 static void timerCallback_SW2(void) {
-  Timer1.detachInterrupt();
   detachInterrupt(digitalPinToInterrupt(S2_INT));
-  S2_buttonStateCount = 0;
+  Timer1.detachInterrupt();
   S2_buttonReadComplete = true;
 }
 
@@ -278,7 +279,7 @@ void setup() {
   dBFastRelativeLevel();
 
   Timer1.initialize(S2_READTIME_MICROSECONDS);
-  attachInterrupt(digitalPinToInterrupt(S2_INT), ISR_BLOCK_S2, CHANGE);
+  attachInterrupt(S2_INT, ISR_BLOCK_S2, CHANGE);
 }
 
 
@@ -293,29 +294,29 @@ void loop() {
   uint32_t currentMillis = millis();
 
   if (S2_buttonStateCount > 0) {
-    if(S2_debounceStart - currentMillis <= S2_DEBOUNCE_MILLISECONDS) {
-      if (S2_interruptEnabled) {
-        detachInterrupt(digitalPinToInterrupt(S2_INT));
+    if(S2_debounceStart - currentMillis > S2_DEBOUNCE_MILLISECONDS) {
+      if (!S2_interruptEnabled) {
+      attachInterrupt(S2_INT, ISR_BLOCK_S2, CHANGE);
       }
-    }
-    else if (!S2_interruptEnabled) {
-      attachInterrupt(digitalPinToInterrupt(S2_INT), ISR_BLOCK_S2, CHANGE);
     }
   }
 
   if (S2_buttonReadComplete) {
     for (uint8_t k = 0; k < S2_buttonStateCount; k++) {
       ledbutton_SW2.brightness(S2_PWM_DEF);
-      delay(100);
+      delay(300);
       ledbutton_SW2.off();
-      delay(100);
+      delay(200);
     }
+
+    S2_buttonStateCount = 0;
+
     S2_buttonReadComplete = false;
-    attachInterrupt(digitalPinToInterrupt(S2_INT), ISR_BLOCK_S2, CHANGE);
+    attachInterrupt(S2_INT, ISR_BLOCK_S2, CHANGE);
   }
   
   // read audio levels from MSGEQ7 only if enough time has passed
-  if (currentMillis - previousMillis >= AUDIO_READ_INTERVAL) {
+  if (currentMillis - previousMillis >= AUDIO_READ_INTERVAL_MILLISECONDS) {
     // save the time of most recent transmission
     previousMillis = currentMillis;
 
@@ -328,6 +329,8 @@ void loop() {
       Serial.print(levelDebug[0]);
       Serial.print(" ");
       Serial.print(levelDebug[1]);
+      Serial.print(" ");
+      Serial.print(S2_debounceStop);
       Serial.print(" \n");
     #endif
   }
@@ -346,6 +349,8 @@ void loop() {
       Serial.print((uint16_t)(lowByte(volOut >> 4)));
       Serial.print(" ");
       Serial.print(levelOut);
+      Serial.print(" ");
+      Serial.print(S2_debounceStop);
       Serial.print(" ");
       for(uint8_t k = 0; k < 2; k++) {
         Serial.print(volumeRange[k]);
