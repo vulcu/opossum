@@ -61,7 +61,8 @@ volatile bool S2LedIsOn = LOW;
 
 // S2 interrupt debounce and timer values
 const int16_t S2_INT = digitalPinToInterrupt((int16_t)S2_PIN);
-volatile bool S2_interruptEnabled, S2_buttonReadComplete = false;
+volatile bool S2_interruptEnabled, S2_isResetInterrupt = false;
+volatile bool S2_buttonReadComplete = false;
 volatile uint8_t S2_buttonStateCount = 0;
 volatile uint32_t S2_debounceStart, S2_debounceStop = 0;
 
@@ -92,7 +93,7 @@ LEDBUTTON ledbutton_SW2(S2_PIN, led_SW2);
 static void ISR_BLOCK_S2(void) {
   detachInterrupt(S2_INT);
   if (S2_buttonStateCount == 0) {
-    Timer1.attachInterrupt(timerCallback_SW2);
+    Timer1.attachInterrupt(ISR_BLOCK_TIMER1_SW2);
   }
   S2_buttonStateCount += 1;
   S2_debounceStart = millis();
@@ -100,8 +101,16 @@ static void ISR_BLOCK_S2(void) {
 }
 
 
-static void timerCallback_SW2(void) {
-  detachInterrupt(digitalPinToInterrupt(S2_INT));
+static void ISR_BLOCK_S2_RESET(void) {
+  detachInterrupt(S2_INT);
+  S2_isResetInterrupt = true;
+  S2_debounceStart = millis();
+  S2_debounceStop = S2_debounceStart + S2_DEBOUNCE_MILLISECONDS;
+}
+
+
+static void ISR_BLOCK_TIMER1_SW2(void) {
+  detachInterrupt(S2_INT);
   Timer1.detachInterrupt();
   S2_buttonReadComplete = true;
 }
@@ -278,8 +287,9 @@ void setup() {
   baseLevel = levelOut;
   dBFastRelativeLevel();
 
-  Timer1.initialize(S2_READTIME_MICROSECONDS);
   attachInterrupt(S2_INT, ISR_BLOCK_S2, CHANGE);
+  S2_buttonStateCount = 0;
+  Timer1.initialize(S2_READTIME_MICROSECONDS);
 }
 
 
@@ -312,9 +322,21 @@ void loop() {
     S2_buttonStateCount = 0;
 
     S2_buttonReadComplete = false;
-    attachInterrupt(S2_INT, ISR_BLOCK_S2, CHANGE);
+    if (ledbutton_SW2.read()){
+      attachInterrupt(S2_INT, ISR_BLOCK_S2, CHANGE);
+    }
+    else {
+      attachInterrupt(S2_INT, ISR_BLOCK_S2_RESET, RISING);
+    }
   }
   
+  if (S2_isResetInterrupt) {
+    if(S2_debounceStart - currentMillis > S2_DEBOUNCE_MILLISECONDS) {
+      S2_isResetInterrupt = false;
+      attachInterrupt(S2_INT, ISR_BLOCK_TIMER1_SW2, CHANGE);
+    }
+  }
+
   // read audio levels from MSGEQ7 only if enough time has passed
   if (currentMillis - previousMillis >= AUDIO_READ_INTERVAL_MILLISECONDS) {
     // save the time of most recent transmission

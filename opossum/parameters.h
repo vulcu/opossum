@@ -42,7 +42,7 @@
   #define AUDIO_READ_INTERVAL_MILLISECONDS (uint16_t)100
 
   // time in ms between audio input level reads
-  #define S2_DEBOUNCE_MILLISECONDS (uint32_t)50
+  #define S2_DEBOUNCE_MILLISECONDS (uint32_t)100
 
   // time in us between first switch state change and read completion
   #define S2_READTIME_MICROSECONDS (uint32_t)700000
