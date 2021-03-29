@@ -54,6 +54,14 @@
         }
       }
 
+      void on(void) {
+        // set the LED to OFF
+        if (led_pin >= 0 ) {
+          // don't write anything if no valid LED pin is defined
+          digitalWrite(led_pin, HIGH);
+        }
+      }
+
       void reset(void) {
         // turn the LED off and clear the pin attachment
         off();
@@ -136,6 +144,12 @@
       void unattach(void) {
         // reset the LED pin attachment (disables control of LED)
         led.reset();
+      }
+
+      void init(void) {
+        // configure the port and input pullup mode
+        BUTTON::init();
+        led.init();
       }
   };
 
