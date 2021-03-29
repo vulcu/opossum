@@ -136,20 +136,32 @@
         led.brightness(value);
       }
 
-      void off(void) {
-        // set the LED to OFF
-        led.off();
+      void disableInputPullup(void) {
+        // disable the input pullup
+        BUTTON::disableInputPullup();
+        led.init();
       }
-      
-      void unattach(void) {
-        // reset the LED pin attachment (disables control of LED)
-        led.reset();
+
+      void enableInputPullup(void) {
+        // enable the input pullup
+        BUTTON::enableInputPullup();
+        led.init();
       }
 
       void init(void) {
         // configure the port and input pullup mode
         BUTTON::init();
         led.init();
+      }
+
+      void off(void) {
+        // set the LED to OFF
+        led.off();
+      }
+
+      void unattach(void) {
+        // reset the LED pin attachment (disables control of LED)
+        led.reset();
       }
   };
 
