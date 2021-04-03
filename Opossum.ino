@@ -39,8 +39,6 @@ const uint16_t dBCoefTable[25] PROGMEM =
   6492, 6876, 7284, 7715, 8173
 };
 
-
-
 // buffer index, volume, filtered volume, base level, present level
 uint8_t  bufferIndx = 0;
 uint8_t volumeRange[2];
@@ -55,13 +53,8 @@ uint16_t dBLevs[25];
 // time of most recent audio level read (rolls over after about 50 days)
 uint32_t previousMillis = 0;
 
-// value of S2 function button, set/cleared by ISR
-volatile bool functionFeatureIsEnabled = LOW;
-volatile bool S2LedIsOn = LOW;
-
 // S2 interrupt debounce and timer values
-volatile bool S2_interrupt_trigger_DIRECTION = LOW;
-volatile bool S2_interrupt_is_ENABLED, S2_button_read_ACTIVE = false;
+volatile bool S2_button_read_ACTIVE = false;
 volatile uint8_t S2_interrupt_stateCounter_BUTTON = 0;
 volatile uint32_t S2_button_read_START, S2_interrupt_debounce_START = 0;
 
@@ -91,19 +84,18 @@ LED_Button ledbutton_SW2(S2_PIN, led_SW2);
 
 void ISR_BLOCK_S2_FALLING(void) {
   // execute interrupt code here
-  if (S2_interrupt_is_ENABLED) {
+  uint32_t currentMillis = millis();
+  if ((currentMillis - S2_interrupt_debounce_START) > S2_DEBOUNCE_MILLISECONDS) {
     detachInterrupt(S2_INTERRUPT_VECTOR);
-    S2_interrupt_is_ENABLED = false;
-    S2_interrupt_debounce_START = millis();
+    S2_interrupt_debounce_START = currentMillis;
     if (S2_interrupt_stateCounter_BUTTON == 0) {
-      S2_button_read_START = S2_interrupt_debounce_START;
+      S2_button_read_START = currentMillis;
       S2_button_read_ACTIVE = true;
       S2_interrupt_stateCounter_BUTTON += 1;
     }
-    else {
+    else if ((S2_interrupt_debounce_START - S2_button_read_START) <= S2_READTIME_MILLISECONDS) {
       S2_interrupt_stateCounter_BUTTON += 1;
     }
-    S2_interrupt_trigger_DIRECTION = HIGH;
     attachInterrupt(S2_INTERRUPT_VECTOR, ISR_BLOCK_S2_RISING, RISING);
   }
 }
@@ -111,14 +103,15 @@ void ISR_BLOCK_S2_FALLING(void) {
 
 void ISR_BLOCK_S2_RISING(void) {
   // execute interrupt code here
-  if (S2_interrupt_is_ENABLED) {
+  uint32_t currentMillis = millis();
+  if ((currentMillis - S2_interrupt_debounce_START) > S2_DEBOUNCE_MILLISECONDS) {
     detachInterrupt(S2_INTERRUPT_VECTOR);
-    S2_interrupt_is_ENABLED = false;
-    S2_interrupt_debounce_START = millis();
+    S2_interrupt_debounce_START = currentMillis;
     if (S2_interrupt_stateCounter_BUTTON != 0) {
-      S2_interrupt_stateCounter_BUTTON += 1;
+      if ((S2_interrupt_debounce_START - S2_button_read_START) <= S2_READTIME_MILLISECONDS) {
+        S2_interrupt_stateCounter_BUTTON += 1;
+      }
     }
-    S2_interrupt_trigger_DIRECTION = LOW;
     attachInterrupt(S2_INTERRUPT_VECTOR, ISR_BLOCK_S2_FALLING, FALLING);
   }
 }
@@ -295,9 +288,7 @@ void setup() {
   baseLevel = levelOut;
   dBFastRelativeLevel();
 
-  S2_interrupt_trigger_DIRECTION = LOW;
   attachInterrupt(S2_INTERRUPT_VECTOR, ISR_BLOCK_S2_FALLING, FALLING);
-  S2_interrupt_is_ENABLED = true;
 }
 
 
@@ -308,25 +299,11 @@ void loop() {
     bluetooth.stop();
   }
 
+  // feature level [1=autovolume on/off, 2=play/pause, 3=disconnect 4=reserved]
+  uint8_t feature_level = 0;
+
   // get the elapsed time, in millisecionds, since power-on
   uint32_t currentMillis = millis();
-
-  if (S2_button_read_ACTIVE) {
-    if ((currentMillis - S2_button_read_START) > S2_READTIME_MILLISECONDS) {
-      cli();
-      uint8_t S2_buttonStateCount = S2_interrupt_stateCounter_BUTTON;
-      S2_interrupt_stateCounter_BUTTON = 0;
-      S2_button_read_ACTIVE = false;
-      sei();
-
-      Serial.println(S2_buttonStateCount);
-    }
-  }
-  if (!S2_interrupt_is_ENABLED) {
-    if ((currentMillis - S2_interrupt_debounce_START) > S2_DEBOUNCE_MILLISECONDS) {
-      S2_interrupt_is_ENABLED = true;
-    }
-  }
 
   // read audio levels from MSGEQ7 only if enough time has passed
   if (currentMillis - previousMillis >= AUDIO_READ_INTERVAL_MILLISECONDS) {
@@ -337,13 +314,27 @@ void loop() {
     spectrum.read(levelRead);
     levelOut = expDecayBuf(spectrum.mean(levelRead));
 
+    if (S2_button_read_ACTIVE) {
+      if ((currentMillis - S2_button_read_START) >= (S2_READTIME_MILLISECONDS)) {
+        cli();
+        uint8_t S2_buttonStateCount = S2_interrupt_stateCounter_BUTTON;
+        S2_interrupt_stateCounter_BUTTON = 0;
+        S2_button_read_ACTIVE = false;
+        sei();
+
+        feature_level = ((S2_buttonStateCount == 1) ? 3 :
+                        ((S2_buttonStateCount == 2) ? 1 :
+                        ((S2_buttonStateCount == 3) ? 4 : 2)));
+      }
+    } 
+
     #if defined DEBUG
       uint16_t levelDebug[2] = {(uint16_t)(lowByte(volOut >> 4)), levelOut};
       Serial.print(levelDebug[0]);
       Serial.print(" ");
       Serial.print(levelDebug[1]);
       Serial.print(" ");
-      Serial.print(S2_debounceStop);
+      Serial.print((int16_t)feature_level * 1000);
       Serial.print(" \n");
     #endif
   }
@@ -363,7 +354,7 @@ void loop() {
       Serial.print(" ");
       Serial.print(levelOut);
       Serial.print(" ");
-      Serial.print(S2_debounceStop);
+      Serial.print((int16_t)feature_level * 1000);
       Serial.print(" ");
       for(uint8_t k = 0; k < 2; k++) {
         Serial.print(volumeRange[k]);
