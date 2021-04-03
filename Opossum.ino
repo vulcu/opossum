@@ -60,7 +60,6 @@ volatile bool functionFeatureIsEnabled = LOW;
 volatile bool S2LedIsOn = LOW;
 
 // S2 interrupt debounce and timer values
-const int16_t S2_INT = digitalPinToInterrupt((int16_t)S2_PIN);
 volatile bool S2_interruptEnabled, S2_isResetInterrupt = false;
 volatile bool S2_buttonReadComplete = false;
 volatile uint8_t S2_buttonStateCount = 0;
@@ -90,29 +89,42 @@ LED led_SW2(S2_LEDPWM);
 LED_Button ledbutton_SW2(S2_PIN, led_SW2);
 
 
-static void ISR_BLOCK_S2(void) {
-  detachInterrupt(S2_INT);
-  if (S2_buttonStateCount == 0) {
-    Timer1.attachInterrupt(ISR_BLOCK_TIMER1_SW2);
+void ISR_BLOCK_S2_FALLING(void) {
+  // execute interrupt code here
+  if (S2_interrupt_is_ENABLED) {
+    detachInterrupt(S2_INTERRUPT_VECTOR);
+    S2_interrupt_is_ENABLED = false;
+    S2_interrupt_debounce_START = millis();
+    if ((S2_interrupt_stateCounter_BUTTON == 0) && (!S2_interrupt_read_COMPLETE)) {
+      S2_interrupt_read_START = true;
+      S2_interrupt_stateCounter_BUTTON += 1;
+    }
+    else {
+      S2_interrupt_stateCounter_BUTTON += 1;
+    }
+    S2_interrupt_trigger_DIRECTION = HIGH;
+    attachInterrupt(S2_INTERRUPT_VECTOR, ISR_BLOCK_S2_RISING, RISING);
   }
-  S2_buttonStateCount += 1;
-  S2_debounceStart = millis();
-  S2_debounceStop = S2_debounceStart + S2_DEBOUNCE_MILLISECONDS;
 }
 
 
-static void ISR_BLOCK_S2_RESET(void) {
-  detachInterrupt(S2_INT);
-  S2_isResetInterrupt = true;
-  S2_debounceStart = millis();
-  S2_debounceStop = S2_debounceStart + S2_DEBOUNCE_MILLISECONDS;
+void ISR_BLOCK_S2_RISING(void) {
+  // execute interrupt code here
+  if (S2_interrupt_is_ENABLED) {
+    detachInterrupt(S2_INTERRUPT_VECTOR);
+    S2_interrupt_debounce_START = millis();
+    if ((S2_interrupt_stateCounter_BUTTON != 0) && (!S2_interrupt_read_COMPLETE)) {
+      S2_interrupt_stateCounter_BUTTON += 1;
+    }
+    S2_interrupt_trigger_DIRECTION = LOW;
+    attachInterrupt(S2_INTERRUPT_VECTOR, ISR_BLOCK_S2_FALLING, FALLING);
+  }
 }
 
 
-static void ISR_BLOCK_TIMER1_SW2(void) {
-  detachInterrupt(S2_INT);
+void ISR_BLOCK_TIMER1_S2(void) {
   Timer1.detachInterrupt();
-  S2_buttonReadComplete = true;
+  S2_interrupt_read_COMPLETE = true;
 }
 
 
@@ -287,9 +299,13 @@ void setup() {
   baseLevel = levelOut;
   dBFastRelativeLevel();
 
-  attachInterrupt(S2_INT, ISR_BLOCK_S2, CHANGE);
-  S2_buttonStateCount = 0;
   Timer1.initialize(S2_READTIME_MICROSECONDS);
+
+  cli();
+  S2_interrupt_trigger_DIRECTION = LOW;
+  attachInterrupt(S2_INTERRUPT_VECTOR, ISR_BLOCK_S2_FALLING, FALLING);
+  S2_interrupt_is_ENABLED = true;
+  sei();
 }
 
 
@@ -303,38 +319,26 @@ void loop() {
   // get the elapsed time, in millisecionds, since power-on
   uint32_t currentMillis = millis();
 
-  if (S2_buttonStateCount > 0) {
-    if(S2_debounceStart - currentMillis > S2_DEBOUNCE_MILLISECONDS) {
-      if (!S2_interruptEnabled) {
-      attachInterrupt(S2_INT, ISR_BLOCK_S2, CHANGE);
-      }
+  if (!S2_interrupt_is_ENABLED) {
+    cli();
+    if ((currentMillis - S2_interrupt_debounce_START) > S2_DEBOUNCE_MILLISECONDS) {
+      S2_interrupt_is_ENABLED = true;
     }
+    sei();
   }
 
-  if (S2_buttonReadComplete) {
-    for (uint8_t k = 0; k < S2_buttonStateCount; k++) {
-      ledbutton_SW2.brightness(S2_PWM_DEF);
-      delay(300);
-      ledbutton_SW2.off();
-      delay(200);
-    }
-
-    S2_buttonStateCount = 0;
-
-    S2_buttonReadComplete = false;
-    if (ledbutton_SW2.read()){
-      attachInterrupt(S2_INT, ISR_BLOCK_S2, CHANGE);
-    }
-    else {
-      attachInterrupt(S2_INT, ISR_BLOCK_S2_RESET, RISING);
-    }
+  if (S2_interrupt_read_START) {
+    Timer1.restart();
+    Timer1.attachInterrupt(ISR_BLOCK_TIMER1_S2);
+    S2_interrupt_read_START = false;
   }
-  
-  if (S2_isResetInterrupt) {
-    if(S2_debounceStart - currentMillis > S2_DEBOUNCE_MILLISECONDS) {
-      S2_isResetInterrupt = false;
-      attachInterrupt(S2_INT, ISR_BLOCK_TIMER1_SW2, CHANGE);
-    }
+
+  if (S2_interrupt_read_COMPLETE) {
+    cli();
+    uint8_t S2_buttonStateCount = S2_interrupt_stateCounter_BUTTON;
+    sei();
+    S2_interrupt_stateCounter_BUTTON = 0;
+    S2_interrupt_read_COMPLETE = false;
   }
 
   // read audio levels from MSGEQ7 only if enough time has passed
