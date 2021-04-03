@@ -48,7 +48,7 @@
   #define S2_DEBOUNCE_MILLISECONDS (uint32_t)50
 
   // time in ms between first switch state change and read completion
-  #define S2_READTIME_MICROSECONDS (uint32_t)700000
+  #define S2_READTIME_MILLISECONDS (uint32_t)700
 
   // min, max, and default 'on' LED brightness values for each switch LED
   #define S1_PWM_MIN (uint8_t)20          // S1 minimum PWM level

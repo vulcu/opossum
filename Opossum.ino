@@ -60,10 +60,10 @@ volatile bool functionFeatureIsEnabled = LOW;
 volatile bool S2LedIsOn = LOW;
 
 // S2 interrupt debounce and timer values
-volatile bool S2_interruptEnabled, S2_isResetInterrupt = false;
-volatile bool S2_buttonReadComplete = false;
-volatile uint8_t S2_buttonStateCount = 0;
-volatile uint32_t S2_debounceStart, S2_debounceStop = 0;
+volatile bool S2_interrupt_trigger_DIRECTION = LOW;
+volatile bool S2_interrupt_is_ENABLED, S2_button_read_ACTIVE = false;
+volatile uint8_t S2_interrupt_stateCounter_BUTTON = 0;
+volatile uint32_t S2_button_read_START, S2_interrupt_debounce_START = 0;
 
 // define if serial UART port should be initialized when BM62 is init
 bool BM62_initSerialPort = true;
@@ -95,8 +95,9 @@ void ISR_BLOCK_S2_FALLING(void) {
     detachInterrupt(S2_INTERRUPT_VECTOR);
     S2_interrupt_is_ENABLED = false;
     S2_interrupt_debounce_START = millis();
-    if ((S2_interrupt_stateCounter_BUTTON == 0) && (!S2_interrupt_read_COMPLETE)) {
-      S2_interrupt_read_START = true;
+    if (S2_interrupt_stateCounter_BUTTON == 0) {
+      S2_button_read_START = S2_interrupt_debounce_START;
+      S2_button_read_ACTIVE = true;
       S2_interrupt_stateCounter_BUTTON += 1;
     }
     else {
@@ -112,19 +113,14 @@ void ISR_BLOCK_S2_RISING(void) {
   // execute interrupt code here
   if (S2_interrupt_is_ENABLED) {
     detachInterrupt(S2_INTERRUPT_VECTOR);
+    S2_interrupt_is_ENABLED = false;
     S2_interrupt_debounce_START = millis();
-    if ((S2_interrupt_stateCounter_BUTTON != 0) && (!S2_interrupt_read_COMPLETE)) {
+    if (S2_interrupt_stateCounter_BUTTON != 0) {
       S2_interrupt_stateCounter_BUTTON += 1;
     }
     S2_interrupt_trigger_DIRECTION = LOW;
     attachInterrupt(S2_INTERRUPT_VECTOR, ISR_BLOCK_S2_FALLING, FALLING);
   }
-}
-
-
-void ISR_BLOCK_TIMER1_S2(void) {
-  Timer1.detachInterrupt();
-  S2_interrupt_read_COMPLETE = true;
 }
 
 
@@ -299,13 +295,9 @@ void setup() {
   baseLevel = levelOut;
   dBFastRelativeLevel();
 
-  Timer1.initialize(S2_READTIME_MICROSECONDS);
-
-  cli();
   S2_interrupt_trigger_DIRECTION = LOW;
   attachInterrupt(S2_INTERRUPT_VECTOR, ISR_BLOCK_S2_FALLING, FALLING);
   S2_interrupt_is_ENABLED = true;
-  sei();
 }
 
 
@@ -319,26 +311,21 @@ void loop() {
   // get the elapsed time, in millisecionds, since power-on
   uint32_t currentMillis = millis();
 
+  if (S2_button_read_ACTIVE) {
+    if ((currentMillis - S2_button_read_START) > S2_READTIME_MILLISECONDS) {
+      cli();
+      uint8_t S2_buttonStateCount = S2_interrupt_stateCounter_BUTTON;
+      S2_interrupt_stateCounter_BUTTON = 0;
+      S2_button_read_ACTIVE = false;
+      sei();
+
+      Serial.println(S2_buttonStateCount);
+    }
+  }
   if (!S2_interrupt_is_ENABLED) {
-    cli();
     if ((currentMillis - S2_interrupt_debounce_START) > S2_DEBOUNCE_MILLISECONDS) {
       S2_interrupt_is_ENABLED = true;
     }
-    sei();
-  }
-
-  if (S2_interrupt_read_START) {
-    Timer1.restart();
-    Timer1.attachInterrupt(ISR_BLOCK_TIMER1_S2);
-    S2_interrupt_read_START = false;
-  }
-
-  if (S2_interrupt_read_COMPLETE) {
-    cli();
-    uint8_t S2_buttonStateCount = S2_interrupt_stateCounter_BUTTON;
-    sei();
-    S2_interrupt_stateCounter_BUTTON = 0;
-    S2_interrupt_read_COMPLETE = false;
   }
 
   // read audio levels from MSGEQ7 only if enough time has passed
