@@ -77,13 +77,13 @@
 #ifndef __BUTTON_H__
 #define __BUTTON_H__
 
-  class BUTTON {
+  class Button {
     private:    
       const int8_t button_pin;
       uint8_t button_port_input_mode = INPUT;
 
     public:
-      BUTTON(uint8_t button_pinAttachment) :
+      Button(uint8_t button_pinAttachment) :
         button_pin(button_pinAttachment) {
         // class constructor
       }
@@ -116,12 +116,12 @@
 #ifndef __LEDBUTTON_H__
 #define __LEDBUTTON_H__
 
-  class LEDBUTTON: public BUTTON {
+  class LED_Button: public Button {
     LED led;
 
     public:
-      LEDBUTTON(int8_t button_pinAttachment, LED &led_Attachment) :
-        BUTTON(button_pinAttachment),
+      LED_Button(int8_t button_pinAttachment, LED &led_Attachment) :
+        Button(button_pinAttachment),
         led(led_Attachment){
         // class constructor
       }
@@ -138,19 +138,19 @@
 
       void disableInputPullup(void) {
         // disable the input pullup
-        BUTTON::disableInputPullup();
+        Button::disableInputPullup();
         led.init();
       }
 
       void enableInputPullup(void) {
         // enable the input pullup
-        BUTTON::enableInputPullup();
+        Button::enableInputPullup();
         led.init();
       }
 
       void init(void) {
         // configure the port and input pullup mode
-        BUTTON::init();
+        Button::init();
         led.init();
       }
 

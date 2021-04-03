@@ -87,7 +87,7 @@ MAX9744 amplifier(MAX9744_I2CADDR, MUTE, SHDN, &Wire);
 // create LED and LED+button objects for S1 and S2 user interface switches
 LED led_SW1(S1_LEDPWM);
 LED led_SW2(S2_LEDPWM);
-LEDBUTTON ledbutton_SW2(S2_PIN, led_SW2);
+LED_Button ledbutton_SW2(S2_PIN, led_SW2);
 
 
 static void ISR_BLOCK_S2(void) {
