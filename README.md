@@ -15,7 +15,7 @@ A bluetooth-based amplifier with automatic gain control, written primarily in Ar
 * [References](#references)
 
 ## General Info
-This project makes things sound more-or-less the same, or at least at the same volume. It was concieved and started at a point before I had access to an online streaming service such as Spotify, who normalizes track levels across albums and artists. When playing back music without that normalization it often frustrated me when a quiet track would follow a loud track, or vice versa, and the playback volume would thus jump substantially in one direction or the other.
+This project is a basis for a bluetooth stereo audio amplifier with a spetral-based automatic gain control. It was concieved and started at a point before I had access to an online streaming service such as Spotify, who normalizes track levels across albums and artists. When playing back music without that normalization it often frustrated me when a quiet track would follow a loud track, or vice versa, and the playback volume would thus jump substantially in one direction or the other.
 
 A bluetooth-connected amplifier utilizing a microcontroller continuously analyzing the audio spectrum and adjusting the playback amplifier volume accordingly, solves the issue!
 
