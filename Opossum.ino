@@ -26,6 +26,7 @@
 #include "opossum/BM62.cpp"
 #include "opossum/MAX9744.h"
 #include "opossum/MSGEQ7.h"
+#include "opossum/MSGEQ7.cpp"
 
 // comment to deactivate UART debug mode
 #define DEBUG
