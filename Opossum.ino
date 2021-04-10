@@ -25,6 +25,7 @@
 #include "opossum/BM62.h"
 #include "opossum/BM62.cpp"
 #include "opossum/MAX9744.h"
+#include "opossum/MAX9744.cpp"
 #include "opossum/MSGEQ7.h"
 #include "opossum/MSGEQ7.cpp"
 
