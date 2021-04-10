@@ -1,5 +1,5 @@
 /*
- * parameters.h - System paraeters for Opossum BT Aplifier
+ * opossum.h - System paraeters for Opossum BT Aplifier
  * Copyright (c) 2017 Winry R. Litwa-Vulcu. All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef __PARAMETERS_H__
-#define __PARAMETERS_H__
+#ifndef __OPOSSUM_H__
+#define __OPOSSUM_H__
 
   // define the MAX9744 I2C address, default is 0x4B
   #define MAX9744_I2CADDR ((uint8_t)0x4B)
@@ -38,7 +38,10 @@
   #define VOLUME (uint8_t)0
   #define DC_OUT (uint8_t)A1
 
-  //
+  // control input pullup for analog pin measuring MSGEQ7 'DCOUT' value
+  #define MSGEQ7_INPUT_PULLUP_ON_DC_OUT false
+
+  // interrupt vector of Switch 2 interrupt pin
   #define S2_INTERRUPT_VECTOR digitalPinToInterrupt((int16_t)S2_PIN)
 
   // time in ms between audio input level reads
