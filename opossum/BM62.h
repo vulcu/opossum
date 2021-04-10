@@ -70,6 +70,12 @@
   #endif
 
   class BM62 {
+    private:
+      uint8_t prgm_sense_n;
+      uint8_t reset_n;
+      uint8_t ind_a2dp_n;
+      HardwareSerial* hserial;
+
       // BM62 UART communication header bytes
       uint8_t BM62_UART_Header [BYTE_COUNT_UART_HEADER] =
       {
@@ -184,11 +190,6 @@
       }
 
     private:
-      uint8_t prgm_sense_n;
-      uint8_t reset_n;
-      uint8_t ind_a2dp_n;
-      HardwareSerial* hserial;
-
       // build the BM62 UART media command array from its component parts:
       uint8_t buildMediaCommand(uint8_t mediaCommand[], uint8_t instruction[]) {
         memcpy(mediaCommand, BM62_A2DP_Command_Prefix, BYTE_COUNT_A2DP_COMMAND);
