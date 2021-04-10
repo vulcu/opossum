@@ -19,7 +19,7 @@
 #include "ledbutton.h"
 
 /**************************************************************************/
-// class constructor for LED class
+// class constructor for LED object
 LED::LED(int8_t led_pinAttachment) :
   led_pin(led_pinAttachment) {
 }
@@ -68,7 +68,7 @@ void LED::reset(void) {
 /**************************************************************************/
 
 /**************************************************************************/
-// class constructor for Button class
+// class constructor for Button object
 Button::Button(uint8_t button_pinAttachment) :
   button_pin(button_pinAttachment),
   button_port_input_mode(INPUT) {
@@ -98,7 +98,7 @@ bool Button::read(void) {
 /**************************************************************************/
 
 /**************************************************************************/
-// class constructor for LED_Button class
+// class constructor for LED_Button object
 LED_Button::LED_Button(int8_t button_pinAttachment, LED &led_Attachment) :
   Button(button_pinAttachment),
   led(led_Attachment){
