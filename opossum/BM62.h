@@ -108,6 +108,57 @@
           0x02, 0x00, 0x34
       };
 
+      // BM62 UART commands for audio equalization control
+      const uint8_t BM62_EQ_OFF [BYTE_COUNT_A2DP_INSTRUCTION] =
+      {
+          0x1C, 0x00, 0xFF
+      };
+      const uint8_t BM62_EQ_CLASSICAL [BYTE_COUNT_A2DP_INSTRUCTION] =
+      {
+          0x1C, 0x04, 0xFF
+      };
+      const uint8_t BM62_EQ_JAZZ [BYTE_COUNT_A2DP_INSTRUCTION] =
+      {
+          0x1C, 0x06, 0xFF
+      };
+      const uint8_t BM62_EQ_DANCE [BYTE_COUNT_A2DP_INSTRUCTION] =
+      {
+          0x1C, 0x08, 0xFF
+      };
+
+      // BM62 UART commands for system status control
+      uint8_t BM62_SYS_Command_Prefix [BYTE_COUNT_SYSTEM_PREFIX] =
+      {
+          0x03
+      };
+      const uint8_t BM62_EnterPairingMode [BYTE_COUNT_SYSTEM_INSTRUCTION] =
+      {
+          0x02, 0x00, 0x5D
+      };
+
+      // BM62 UART commands for requesting device information
+      uint8_t BM62_GETDEVICE_Prefix [BYTE_COUNT_GET_DEVICE_INFO_PREFIX] =
+      {
+          0x02
+      };
+      const uint8_t BM62_GetDeviceInformation [BYTE_COUNT_GET_DEVICE_INFO_INSTRUCTION] =
+      {
+          0x0E, 0x00
+      };
+
+      // BM62 UART commands for requesting element attributes
+      uint8_t BM62_GETATTRIBUTE_Prefix [BYTE_COUNT_GET_ELEMENT_ATTR_PREFIX] =
+      {
+          0x13
+      };
+      const uint8_t BM62_GetElementAttributes [BYTE_COUNT_GET_ELEMENT_ATTR_INSTRUCTION] =
+      {
+          0x0B, 0x00, 0x20, 0x00, 0x00, 
+          0x0D, 0x00, 0x00, 0x00, 0x00, 
+          0x00, 0x00, 0x00, 0x00, 0x00, 
+          0x00, 0x00, 0x00, 0x00
+      };
+
     public:
       BM62(uint8_t prgm_sense_n, uint8_t reset_n, uint8_t ind_a2dp_n, 
           HardwareSerial* hserial) {
