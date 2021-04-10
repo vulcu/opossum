@@ -63,10 +63,7 @@ volatile uint32_t S2_button_read_START, S2_interrupt_debounce_START = 0;
 BM62 bluetooth(PRGM_SENSE_N, RST_N, IND_A2DP_N, &Serial);
 
 // create MSGEQ7 driver object
-MSGEQ7 spectrum(STROBE, DC_OUT, RESET, MSGEQ7_isInputPullup);
-
-// define if analog input pullup should be set active when MSGEQ7 is init
-bool MAX9744_init_TWI = true;
+MSGEQ7 spectrum(STROBE, DC_OUT, RESET, MSGEQ7_INPUT_PULLUP_ON_DC_OUT);
 
 // create MAX9744 driver object
 MAX9744 amplifier(MAX9744_I2CADDR, MUTE, SHDN, &Wire);
