@@ -21,17 +21,54 @@
 
   #include <avr/sleep.h>
 
-  #ifndef BYTE_COUNT_MEDIA_COMMAND
-    #define BYTE_COUNT_MEDIA_COMMAND (uint8_t)7
   #endif
-  #ifndef BYTE_COUNT_MEDIA_PREFIX
-    #define BYTE_COUNT_MEDIA_PREFIX (uint8_t)3
+
+  #ifndef BYTE_COUNT_A2DP_COMMAND
+    #define BYTE_COUNT_A2DP_COMMAND       (uint8_t)7
   #endif
-  #ifndef BYTE_COUNT_MEDIA_INSTRUCTION
-    #define BYTE_COUNT_MEDIA_INSTRUCTION (uint8_t)3
+  #ifndef BYTE_COUNT_A2DP_PREFIX
+    #define BYTE_COUNT_A2DP_PREFIX        (uint8_t)1
+  #endif
+  #ifndef BYTE_COUNT_A2DP_INSTRUCTION
+    #define BYTE_COUNT_A2DP_INSTRUCTION   (uint8_t)3
+  #endif
+
+  #endif
   #endif
 
   class BM62 {
+      // BM62 UART communication header bytes
+      uint8_t BM62_UART_Header [BYTE_COUNT_UART_HEADER] =
+      {
+          0xAA, 0x00
+      };
+
+      // BM62 UART commands for media playback control
+      uint8_t BM62_A2DP_Command_Prefix [BYTE_COUNT_A2DP_PREFIX] =
+      {
+          0x03
+      };
+      const uint8_t BM62_Play [BYTE_COUNT_A2DP_INSTRUCTION] =
+      {
+          0x04, 0x00, 0x05
+      };
+      const uint8_t BM62_Pause [BYTE_COUNT_A2DP_INSTRUCTION] =
+      {
+          0x04, 0x00, 0x06
+      };
+      const uint8_t BM62_Stop [BYTE_COUNT_A2DP_INSTRUCTION] =
+      {
+          0x04, 0x00, 0x08
+      };
+      const uint8_t BM62_Prev_Track [BYTE_COUNT_A2DP_INSTRUCTION] =
+      {
+          0x02, 0x00, 0x35
+      };
+      const uint8_t BM62_Next_Track [BYTE_COUNT_A2DP_INSTRUCTION] =
+      {
+          0x02, 0x00, 0x34
+      };
+
     public:
       BM62(uint8_t prgm_sense_n, uint8_t reset_n, uint8_t ind_a2dp_n, 
           HardwareSerial* hserial) {
@@ -43,12 +80,10 @@
         this->hserial = hserial;
       }
 
-
       void enable(void) {
         // set BM62 reset status, active-low signal so HIGH enables device
         digitalWrite(reset_n, HIGH);
       }
-
 
       void init(void) {
         // initialize the BM62 reset line and ensure reset is asserted
@@ -69,19 +104,16 @@
         pinMode(ind_a2dp_n, INPUT_PULLUP);
       }
 
-
       bool isConnected(void) {
         // query state of BM62 IND_A2DP_N pin and return FALSE if no 
         // active A2DP connection is available (indicated by a HIGH state)
         return (bool)!digitalRead(ind_a2dp_n);
       }
 
-
       void reset(void) {
         // set BM62 reset status, active-low signal so LOW puts device in reset
         digitalWrite(reset_n, LOW);
       }
-
 
       void play(void) {
         // start playback from bluetooth-connected media device
@@ -90,14 +122,12 @@
         }
       }
 
-
       void pause(void) {
         // pause playback from bluetooth-connected media device
         if (isConnected()) {
           writeMediaCommand(BM62_Pause);
         }
       }
-
 
       void stop(void) {
         // stop playback from bluetooth-connected media device
@@ -106,14 +136,12 @@
         }
       }
 
-
       void prev(void) {
         // go to previous track on bluetooth-connected media device
         if (isConnected()) {
           writeMediaCommand(BM62_Prev_Track);
         }
       }
-
 
       void next(void) {
         // go to next track on bluetooth-connected media device
@@ -128,40 +156,12 @@
       uint8_t ind_a2dp_n;
       HardwareSerial* hserial;
 
-      // BM62 UART commands for media playback control
-      uint8_t BM62_Media_Command[BYTE_COUNT_MEDIA_COMMAND] =
-      {
-          0xAA, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00
-      };
-      const uint8_t BM62_Play[BYTE_COUNT_MEDIA_INSTRUCTION] =
-      {
-          0x04, 0x00, 0x05
-      };
-      const uint8_t BM62_Pause[BYTE_COUNT_MEDIA_INSTRUCTION] =
-      {
-          0x04, 0x00, 0x06
-      };
-      const uint8_t BM62_Stop[BYTE_COUNT_MEDIA_INSTRUCTION] =
-      {
-          0x04, 0x00, 0x08
-      };
-      const uint8_t BM62_Prev_Track[BYTE_COUNT_MEDIA_INSTRUCTION] =
-      {
-          0x02, 0x00, 0x35
-      };
-      const uint8_t BM62_Next_Track[BYTE_COUNT_MEDIA_INSTRUCTION] =
-      {
-          0x02, 0x00, 0x34
-      };
-
-
       // build the BM62 UART media command array from its component parts:
       uint8_t buildMediaCommand(uint8_t mediaCommand[], uint8_t instruction[]) {
-        memcpy(mediaCommand, BM62_Media_Command, BYTE_COUNT_MEDIA_COMMAND);
-        memcpy(mediaCommand + BYTE_COUNT_MEDIA_PREFIX, instruction, BYTE_COUNT_MEDIA_INSTRUCTION);
-        mediaCommand[BYTE_COUNT_MEDIA_COMMAND - 1] = checksum(mediaCommand, BYTE_COUNT_MEDIA_COMMAND);
+        memcpy(mediaCommand, BM62_A2DP_Command_Prefix, BYTE_COUNT_A2DP_COMMAND);
+        memcpy(mediaCommand + BYTE_COUNT_A2DP_PREFIX, instruction, BYTE_COUNT_A2DP_INSTRUCTION);
+        mediaCommand[BYTE_COUNT_A2DP_COMMAND - 1] = checksum(mediaCommand, BYTE_COUNT_A2DP_COMMAND);
       }
-
 
       // for calculating the checksum of a BM62 UART command:
       uint8_t checksum(uint8_t command[], uint8_t command_length) {
@@ -176,7 +176,6 @@
         return(lowByte(chksum));
       }
 
-
       // check if the BM62 programming pin is pulled low
       void isProgramMode(void) {
         if (!digitalRead(prgm_sense_n)) {
@@ -190,12 +189,13 @@
         }
       }
 
-
       // build the BM62 UART media command array w/ checksum and write over serial UART
       void writeMediaCommand(const uint8_t *instruction) {
-          uint8_t mediaCommand[BYTE_COUNT_MEDIA_COMMAND];
-          buildMediaCommand(mediaCommand, (uint8_t *)instruction);
-          hserial->write(mediaCommand, BYTE_COUNT_MEDIA_COMMAND);
+        uint8_t mediaCommand[BYTE_COUNT_A2DP_COMMAND];
+        buildMediaCommand(mediaCommand, (uint8_t *)instruction);
+        hserial->write(mediaCommand, BYTE_COUNT_A2DP_COMMAND);
+      }
+
       }
   };
 
