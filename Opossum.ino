@@ -19,9 +19,11 @@
 // include libraries for PROGMEM, SLEEP, & I2C
 #include <avr/pgmspace.h>
 
-#include "opossum/parameters.h"
+#include "opossum/opossum.h"
+#include "opossum/ledbutton.h"
+#include "opossum/ledbutton.cpp"
 #include "opossum/BM62.h"
-#include "opossum/userinterface.h"
+#include "opossum/BM62.cpp"
 #include "opossum/MAX9744.h"
 #include "opossum/MSGEQ7.h"
 
