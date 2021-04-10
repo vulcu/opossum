@@ -129,8 +129,8 @@
         pinMode(reset_n, OUTPUT);
         reset();
 
-        // wait 10 ms, then take the BM62 out of reset
-        delay(10);
+        // wait predefined number of ms, then take the BM62 out of reset
+        delay(INIT_RESET_CYCLE_WAIT_TIME_MS);
         enable();
         
         // initialize the BM62 programming sense line
