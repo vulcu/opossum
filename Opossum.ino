@@ -18,7 +18,6 @@
 
 // include libraries for PROGMEM, SLEEP, & I2C
 #include <avr/pgmspace.h>
-#include <TimerOne.h>
 
 #include "opossum/parameters.h"
 #include "opossum/BM62.h"
@@ -58,14 +57,8 @@ volatile bool S2_button_read_ACTIVE = false;
 volatile uint8_t S2_interrupt_stateCounter_BUTTON = 0;
 volatile uint32_t S2_button_read_START, S2_interrupt_debounce_START = 0;
 
-// define if serial UART port should be initialized when BM62 is init
-bool BM62_initSerialPort = true;
-
 // create BM62 driver object
 BM62 bluetooth(PRGM_SENSE_N, RST_N, IND_A2DP_N, &Serial);
-
-// define if analog input pullup should be set active when MSGEQ7 is init
-bool MSGEQ7_isInputPullup = false;
 
 // create MSGEQ7 driver object
 MSGEQ7 spectrum(STROBE, DC_OUT, RESET, MSGEQ7_isInputPullup);
