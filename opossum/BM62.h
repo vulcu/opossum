@@ -21,6 +21,12 @@
 
   #include <avr/sleep.h>
 
+  #ifndef INIT_RESET_CYCLE_WAIT_TIME_MS
+    #define INIT_RESET_CYCLE_WAIT_TIME_MS (uint8_t)10
+  #endif
+
+  #ifndef BYTE_COUNT_UART_HEADER
+    #define BYTE_COUNT_UART_HEADER        (uint8_t)2
   #endif
 
   #ifndef BYTE_COUNT_A2DP_COMMAND
@@ -33,7 +39,34 @@
     #define BYTE_COUNT_A2DP_INSTRUCTION   (uint8_t)3
   #endif
 
+  #ifndef BYTE_COUNT_SYSTEM_COMMAND
+    #define BYTE_COUNT_SYSTEM_COMMAND     (uint8_t)7
   #endif
+  #ifndef BYTE_COUNT_SYSTEM_PREFIX
+    #define BYTE_COUNT_SYSTEM_PREFIX      (uint8_t)1
+  #endif
+  #ifndef BYTE_COUNT_SYSTEM_INSTRUCTION
+    #define BYTE_COUNT_SYSTEM_INSTRUCTION (uint8_t)3
+  #endif
+
+  #ifndef BYTE_COUNT_GET_DEVICE_INFO_COMMAND
+    #define BYTE_COUNT_GET_DEVICE_INFO_COMMAND     (uint8_t)6
+  #endif
+  #ifndef BYTE_COUNT_GET_DEVICE_INFO_PREFIX
+    #define BYTE_COUNT_GET_DEVICE_INFO_PREFIX      (uint8_t)1
+  #endif
+  #ifndef BYTE_COUNT_GET_DEVICE_INFO_INSTRUCTION
+    #define BYTE_COUNT_GET_DEVICE_INFO_INSTRUCTION (uint8_t)2
+  #endif
+
+  #ifndef BYTE_COUNT_GET_ELEMENT_ATTR_COMMAND
+    #define BYTE_COUNT_GET_ELEMENT_ATTR_COMMAND     (uint8_t)23
+  #endif
+  #ifndef BYTE_COUNT_GET_ELEMENT_ATTR_PREFIX
+    #define BYTE_COUNT_GET_ELEMENT_ATTR_PREFIX      (uint8_t)1
+  #endif
+  #ifndef BYTE_COUNT_GET_ELEMENT_ATTR_INSTRUCTION
+    #define BYTE_COUNT_GET_ELEMENT_ATTR_INSTRUCTION (uint8_t)19
   #endif
 
   class BM62 {
