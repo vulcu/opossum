@@ -91,7 +91,7 @@ void Button::init(void) {
   pinMode(button_pin, button_port_input_mode);
 }
 
-// configure the port and input pullup mode
+// read the instantaneous value of the attached Button
 bool Button::read(void) {
   return digitalRead(button_pin);
 }
