@@ -36,9 +36,11 @@
 
 // buffer index, volume, filtered volume, base level, present level
 uint8_t  bufferIndx = 0;
-uint8_t volumeRange[2];
-int16_t  vol, volOut = 0;
-uint16_t zeroSignal, baseLevel, levelOut = 251;
+uint8_t  volumeRange[2];
+int16_t  vol    = 0;
+int16_t  volOut = 0;
+//uint16_t baseLevel  = MSGEQ7_ZERO_SIGNAL_LEVEL;
+uint16_t levelOut   = MSGEQ7_ZERO_SIGNAL_LEVEL;
 
 // audio levels, audio level buffer, and approx. relative dB levels
 uint16_t levelRead[7];
@@ -178,15 +180,13 @@ uint16_t expDecayBuf(uint16_t levelReadMean) {
     levelBuf[bufferIndx] = levelBuf[bufferIndx] +
       ((levelReadMean - levelBuf[bufferIndx]) >> 1);
   }
+  else if (levelReadMean < ((MSGEQ7_ZERO_SIGNAL_LEVEL * (uint16_t)18) >> 4)) {
+    // if the latest level is less a small % over the nominal zero signal,
+    // there's probs no significant audio signal so don't update buffer
+  }
   else {
-    if (levelReadMean < ((zeroSignal * 3) >> 1)) {
-      // if the latest level is less than 150% of the zero signal value,
-      // there's probs no significant audio signal so don't update buffer
-    }
-    else {
-      // otherwise, decay the current value by approximately 3%
-      levelBuf[bufferIndx] = (levelBuf[bufferIndx] * 31L) >> 5;
-    }
+    // otherwise, decay the current value by approximately 3%
+    levelBuf[bufferIndx] = (levelBuf[bufferIndx] * 31L) >> 5;
   }
   bufferIndx++;
 
@@ -255,7 +255,7 @@ void setup() {
   
   // initialize levelBuf to 'zero-signal' value
   for (uint8_t k = 0; k < 32; k++) {
-    levelBuf[k] = baseLevel;
+    levelBuf[k] = MSGEQ7_ZERO_SIGNAL_LEVEL;
   }
   
   // read weighted audio level data, find mean, calculate buffer value

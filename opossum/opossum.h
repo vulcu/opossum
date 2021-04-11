@@ -40,6 +40,7 @@
 
   // control input pullup for analog pin measuring MSGEQ7 'DCOUT' value
   #define MSGEQ7_INPUT_PULLUP_ON_DC_OUT false
+  #define MSGEQ7_ZERO_SIGNAL_LEVEL      (int16_t)300
 
   // interrupt vector of Switch 2 interrupt pin
   #define S2_INTERRUPT_VECTOR digitalPinToInterrupt((int16_t)S2_PIN)
