@@ -40,10 +40,11 @@
       uint8_t ind_a2dp_n;
       HardwareSerial* hserial;
 
-      uint8_t buildMediaCommand(uint8_t mediaCommand[], uint8_t instruction[]);
       uint8_t checksum(uint8_t command[], uint8_t command_length);
       void isProgramMode(void);
-      void writeMediaCommand(const uint8_t *instruction);
+      void writeSerialCommand(const uint8_t *header, const uint8_t *prefix, 
+                              const uint8_t *instruction, const uint8_t bytes_command,
+                              const uint8_t bytes_prefix, const uint8_t bytes_instruction);
   };
 
 #endif

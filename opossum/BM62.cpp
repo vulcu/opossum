@@ -180,44 +180,46 @@ void BM62::reset(void) {
 // start playback from bluetooth-connected media device
 void BM62::play(void) {
   if (isConnected()) {
-    writeMediaCommand(BM62_Play);
+    writeSerialCommand(BM62_UART_Header, BM62_A2DP_Command_Prefix, BM62_Play, 
+                       BYTE_COUNT_A2DP_COMMAND, BYTE_COUNT_A2DP_PREFIX, 
+                       BYTE_COUNT_A2DP_INSTRUCTION);
   }
 }
 
 // pause playback from bluetooth-connected media device
 void BM62::pause(void) {
   if (isConnected()) {
-    writeMediaCommand(BM62_Pause);
+    writeSerialCommand(BM62_UART_Header, BM62_A2DP_Command_Prefix, BM62_Pause, 
+                       BYTE_COUNT_A2DP_COMMAND, BYTE_COUNT_A2DP_PREFIX, 
+                       BYTE_COUNT_A2DP_INSTRUCTION);
   }
 }
 
 // stop playback from bluetooth-connected media device
 void BM62::stop(void) {
   if (isConnected()) {
-    writeMediaCommand(BM62_Stop);
+    writeSerialCommand(BM62_UART_Header, BM62_A2DP_Command_Prefix, BM62_Stop, 
+                       BYTE_COUNT_A2DP_COMMAND, BYTE_COUNT_A2DP_PREFIX, 
+                       BYTE_COUNT_A2DP_INSTRUCTION);
   }
 }
 
 // go to previous track on bluetooth-connected media device
 void BM62::prev(void) {
   if (isConnected()) {
-    writeMediaCommand(BM62_Prev_Track);
+    writeSerialCommand(BM62_UART_Header, BM62_A2DP_Command_Prefix, BM62_Prev_Track, 
+                       BYTE_COUNT_A2DP_COMMAND, BYTE_COUNT_A2DP_PREFIX, 
+                       BYTE_COUNT_A2DP_INSTRUCTION);
   }
 }
 
 // go to next track on bluetooth-connected media device
 void BM62::next(void) {
   if (isConnected()) {
-    writeMediaCommand(BM62_Next_Track);
+    writeSerialCommand(BM62_UART_Header, BM62_A2DP_Command_Prefix, BM62_Next_Track, 
+                       BYTE_COUNT_A2DP_COMMAND, BYTE_COUNT_A2DP_PREFIX, 
+                       BYTE_COUNT_A2DP_INSTRUCTION);
   }
-}
-
-// build the BM62 UART media command array from its component parts:
-uint8_t BM62::buildMediaCommand(uint8_t mediaCommand[], uint8_t instruction[]) {
-  memcpy(mediaCommand, BM62_UART_Header, BYTE_COUNT_UART_HEADER);
-  memcpy(mediaCommand + BYTE_COUNT_UART_HEADER, BM62_A2DP_Command_Prefix, BYTE_COUNT_A2DP_PREFIX);
-  memcpy(mediaCommand + BYTE_COUNT_UART_HEADER +BYTE_COUNT_A2DP_PREFIX, instruction, BYTE_COUNT_A2DP_INSTRUCTION);
-  mediaCommand[BYTE_COUNT_A2DP_COMMAND - 1] = checksum(mediaCommand, BYTE_COUNT_A2DP_COMMAND);
 }
 
 // for calculating the checksum of a BM62 UART command:
@@ -246,26 +248,23 @@ void BM62::isProgramMode(void) {
   }
 }
 
-// build the BM62 UART media command array w/ checksum and write over serial UART
-void BM62::writeMediaCommand(const uint8_t *instruction) {
-  uint8_t mediaCommand[BYTE_COUNT_A2DP_COMMAND];
-  buildMediaCommand(mediaCommand, (uint8_t *)instruction);
-  hserial->write(mediaCommand, BYTE_COUNT_A2DP_COMMAND);
-  //hserial->println("--");
-  //for (uint8_t k = 0; k < sizeof(mediaCommand); k++) {
-  //  hserial->println(mediaCommand[k], HEX);
-  //}
-  //hserial->println("--");
-}
+// build the BM62 UART command array w/ checksum and write over serial UART
+void BM62::writeSerialCommand(const uint8_t *header, const uint8_t *prefix, 
+                              const uint8_t *instruction, const uint8_t bytes_command,
+                              const uint8_t bytes_prefix, const uint8_t bytes_instruction) {
+  uint8_t command[bytes_command];
+  memcpy(command, header, BYTE_COUNT_UART_HEADER);
+  uint8_t indx = BYTE_COUNT_UART_HEADER;
+  memcpy(command + indx, prefix, bytes_prefix);
+  indx += bytes_prefix;
+  memcpy(command + indx, instruction, bytes_instruction);
+  indx += bytes_instruction;
+  command[indx] = checksum(command, indx + 1);
+  hserial->write(command, bytes_command);
 
-/*
-// build the BM62 UART media command array w/ checksum and write over serial UART
-void writeSerialCommand(const uint8_t *header, 
-                        const uint8_t *prefix, 
-                        const uint8_t *instruction) {
-  uint8_t length = sizeof(header) + sizeof(prefix) + sizeof(instruction) + 1;
-  uint8_t command[length];
-  buildSerialCommand(command, (uint8_t *)header, (uint8_t *)prefix, (uint8_t *)instruction);
-  hserial->write(command, length);
+  hserial->println("--");
+  for (uint8_t k = 0; k < sizeof(command); k++) {
+    hserial->println(command[k], HEX);
+  }
+  hserial->println("--");
 }
-*/
