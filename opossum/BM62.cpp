@@ -305,10 +305,4 @@ void BM62::writeSerialCommand(const uint8_t *header, const uint8_t *prefix,
   indx += bytes_instruction;
   command[indx] = checksum(command, indx + 1);
   hserial->write(command, bytes_command);
-
-  hserial->println("--");
-  for (uint8_t k = 0; k < sizeof(command); k++) {
-    hserial->println(command[k], HEX);
-  }
-  hserial->println("--");
 }
