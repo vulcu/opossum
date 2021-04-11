@@ -241,6 +241,7 @@ void setup() {
   // initialize S1 and S2 switches and attach their LEDs to them
   led_SW1.init();
   ledbutton_SW2.enableInputPullup();
+  attachInterrupt(S2_INTERRUPT_VECTOR, ISR_BLOCK_S2_FALLING, FALLING);
 
   // wait for the BM62 to indicate a successful A2DP connection
   waitForConnection();
@@ -263,10 +264,10 @@ void setup() {
   levelOut = expDecayBuf(spectrum.mean(levelRead));
 
   // initialize base volume level and relative dB values
-  baseLevel = levelOut;
-  dBFastRelativeLevel();
+  //baseLevel = levelOut;
+  Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
 
-  attachInterrupt(S2_INTERRUPT_VECTOR, ISR_BLOCK_S2_FALLING, FALLING);
+  S2_interrupt_stateCounter_BUTTON = 0;
 }
 
 
@@ -324,8 +325,8 @@ void loop() {
     amplifier.volume(lowByte(volOut >> 4));
     volOut = vol;
     updateVolumeRange();
-    baseLevel = levelOut;
-    dBFastRelativeLevel();
+    //baseLevel = levelOut;
+    Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
 
     #if defined DEBUG
       Serial.print((uint16_t)(lowByte(volOut >> 4)));
