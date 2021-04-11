@@ -79,21 +79,21 @@ static const uint8_t BM62_Next_Track [BYTE_COUNT_A2DP_INSTRUCTION] =
 };
 
 // BM62 UART commands for audio equalization control
-static const uint8_t BM62_EQ_OFF [BYTE_COUNT_A2DP_INSTRUCTION] =
+static const uint8_t BM62_EQ_Off [BYTE_COUNT_A2DP_INSTRUCTION] =
 {
     0x1C, 0x00, 0xFF
 };
-static const uint8_t BM62_EQ_CLASSICAL [BYTE_COUNT_A2DP_INSTRUCTION] =
+static const uint8_t BM62_EQ_Classical [BYTE_COUNT_A2DP_INSTRUCTION] =
 {
     0x1C, 0x04, 0xFF
 };
-static const uint8_t BM62_EQ_JAZZ [BYTE_COUNT_A2DP_INSTRUCTION] =
+static const uint8_t BM62_EQ_Jazz [BYTE_COUNT_A2DP_INSTRUCTION] =
 {
     0x1C, 0x06, 0xFF
 };
-static const uint8_t BM62_EQ_DANCE [BYTE_COUNT_A2DP_INSTRUCTION] =
+static const uint8_t BM62_EQ_Dance [BYTE_COUNT_A2DP_INSTRUCTION] =
 {
-    0x1C, 0x08, 0xFF
+    0x1C, 0x07, 0xFF
 };
 
 // BM62 UART commands for system status control
@@ -148,6 +148,37 @@ BM62::BM62(uint8_t prgm_sense_n, uint8_t reset_n, uint8_t ind_a2dp_n,
 // set BM62 reset status, active-low signal so HIGH enables device
 void BM62::enable(void) {
   digitalWrite(reset_n, HIGH);
+}
+
+// set audio equalizer preset to specified preset name
+void BM62::setEqualizerPreset(EQ_Preset_t preset) {
+  uint8_t BM62_EQ_Preset[BYTE_COUNT_A2DP_INSTRUCTION];
+  switch (preset) {
+    case EQ_Flat: {
+      memcpy(BM62_EQ_Preset, BM62_EQ_Off, BYTE_COUNT_A2DP_INSTRUCTION);
+    } break;
+
+    case EQ_Classical: {
+      memcpy(BM62_EQ_Preset, BM62_EQ_Classical, BYTE_COUNT_A2DP_INSTRUCTION);
+    } break;
+
+    case EQ_Dance: {
+      memcpy(BM62_EQ_Preset, BM62_EQ_Dance, BYTE_COUNT_A2DP_INSTRUCTION);
+    } break;
+
+    case EQ_Jazz: {
+      memcpy(BM62_EQ_Preset, BM62_EQ_Jazz, BYTE_COUNT_A2DP_INSTRUCTION);
+    } break;
+    
+    default: {
+      return; //invalid reset request so don't do anything
+    } break;
+  }
+  if (isConnected()) {
+    writeSerialCommand(BM62_UART_Header, BM62_A2DP_Command_Prefix, BM62_EQ_Preset, 
+                       BYTE_COUNT_A2DP_COMMAND, BYTE_COUNT_A2DP_PREFIX, 
+                       BYTE_COUNT_A2DP_INSTRUCTION);
+  }
 }
 
 // initialize the BM62 module and GPIO

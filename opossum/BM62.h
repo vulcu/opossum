@@ -21,6 +21,14 @@
 
   class BM62 {
     public:
+      enum EQ_Preset_t
+      {
+        EQ_Flat, 
+        EQ_Classical, 
+        EQ_Dance,
+        EQ_Jazz
+      };
+
       BM62(uint8_t prgm_sense_n, uint8_t reset_n, uint8_t ind_a2dp_n, 
           HardwareSerial* hserial);
 
@@ -28,6 +36,7 @@
       void init(void);
       bool isConnected(void);
       void reset(void);
+      void setEqualizerPreset(EQ_Preset_t preset);
       void play(void);
       void pause(void);
       void stop(void);
