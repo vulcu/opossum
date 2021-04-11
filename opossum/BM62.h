@@ -21,6 +21,8 @@
 
   class BM62 {
     public:
+      // These are the available audio equalizer presets:
+      // EQ_Flat, EQ_Classical, EQ_Dance, EQ_Jazz
       enum EQ_Preset_t
       {
         EQ_Flat, 
