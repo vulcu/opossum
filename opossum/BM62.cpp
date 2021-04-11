@@ -150,6 +150,15 @@ void BM62::enable(void) {
   digitalWrite(reset_n, HIGH);
 }
 
+// put the BM62 back into pairing mode to permit pairing to new device
+void BM62::enterPairingMode(void) {
+  if (isConnected()) {
+    writeSerialCommand(BM62_UART_Header, BM62_SYS_Command_Prefix, BM62_EnterPairingMode, 
+                       BYTE_COUNT_SYSTEM_COMMAND, BYTE_COUNT_SYSTEM_PREFIX, 
+                       BYTE_COUNT_SYSTEM_INSTRUCTION);
+  }
+}
+
 // set audio equalizer preset to specified preset name
 void BM62::setEqualizerPreset(EQ_Preset_t preset) {
   uint8_t BM62_EQ_Preset[BYTE_COUNT_A2DP_INSTRUCTION];
@@ -240,7 +249,7 @@ void BM62::stop(void) {
 }
 
 // go to previous track on bluetooth-connected media device
-void BM62::prev(void) {
+void BM62::previous(void) {
   if (isConnected()) {
     writeSerialCommand(BM62_UART_Header, BM62_A2DP_Command_Prefix, BM62_Prev_Track, 
                        BYTE_COUNT_A2DP_COMMAND, BYTE_COUNT_A2DP_PREFIX, 

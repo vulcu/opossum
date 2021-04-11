@@ -33,6 +33,7 @@
           HardwareSerial* hserial);
 
       void enable(void);
+      void enterPairingMode(void);
       void init(void);
       bool isConnected(void);
       void reset(void);
@@ -40,7 +41,7 @@
       void play(void);
       void pause(void);
       void stop(void);
-      void prev(void);
+      void previous(void);
       void next(void);
 
     private:
