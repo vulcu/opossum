@@ -36,13 +36,13 @@
   #define BYTE_COUNT_SYSTEM_PREFIX      (uint8_t)1
   #define BYTE_COUNT_SYSTEM_INSTRUCTION (uint8_t)3
 
-  #define BYTE_COUNT_GET_DEVICE_INFO_COMMAND     (uint8_t)6
-  #define BYTE_COUNT_GET_DEVICE_INFO_PREFIX      (uint8_t)1
-  #define BYTE_COUNT_GET_DEVICE_INFO_INSTRUCTION (uint8_t)2
+  // #define BYTE_COUNT_GET_DEVICE_INFO_COMMAND     (uint8_t)6
+  // #define BYTE_COUNT_GET_DEVICE_INFO_PREFIX      (uint8_t)1
+  // #define BYTE_COUNT_GET_DEVICE_INFO_INSTRUCTION (uint8_t)2
 
-  #define BYTE_COUNT_GET_ELEMENT_ATTR_COMMAND     (uint8_t)23
-  #define BYTE_COUNT_GET_ELEMENT_ATTR_PREFIX      (uint8_t)1
-  #define BYTE_COUNT_GET_ELEMENT_ATTR_INSTRUCTION (uint8_t)19
+  // #define BYTE_COUNT_GET_ELEMENT_ATTR_COMMAND     (uint8_t)23
+  // #define BYTE_COUNT_GET_ELEMENT_ATTR_PREFIX      (uint8_t)1
+  // #define BYTE_COUNT_GET_ELEMENT_ATTR_INSTRUCTION (uint8_t)19
 
 #endif
 
@@ -106,28 +106,32 @@ static const uint8_t BM62_EnterPairingMode [BYTE_COUNT_SYSTEM_INSTRUCTION] =
     0x02, 0x00, 0x5D
 };
 
-// BM62 UART commands for requesting device information
-static const uint8_t BM62_GETDEVICE_Prefix [BYTE_COUNT_GET_DEVICE_INFO_PREFIX] =
-{
-    0x02
-};
-static const uint8_t BM62_GetDeviceInformation [BYTE_COUNT_GET_DEVICE_INFO_INSTRUCTION] =
-{
-    0x0E, 0x00
-};
+// BM62 UART commands for requesting device information [not implemented]
+/*
+ * static const uint8_t BM62_GETDEVICE_Prefix [BYTE_COUNT_GET_DEVICE_INFO_PREFIX] =
+ * {
+ *     0x02
+ * };
+ * static const uint8_t BM62_GetDeviceInformation [BYTE_COUNT_GET_DEVICE_INFO_INSTRUCTION] =
+ * {
+ *     0x0E, 0x00
+ * };
+ */
 
-// BM62 UART commands for requesting element attributes
-static const uint8_t BM62_GETATTRIBUTE_Prefix [BYTE_COUNT_GET_ELEMENT_ATTR_PREFIX] =
-{
-    0x13
-};
-static const uint8_t BM62_GetElementAttributes [BYTE_COUNT_GET_ELEMENT_ATTR_INSTRUCTION] =
-{
-    0x0B, 0x00, 0x20, 0x00, 0x00, 
-    0x0D, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00
-};
+// BM62 UART commands for requesting element attributes [not implemented]
+/*
+ * static const uint8_t BM62_GETATTRIBUTE_Prefix [BYTE_COUNT_GET_ELEMENT_ATTR_PREFIX] =
+ * {
+ *    0x13
+ * };
+ * static const uint8_t BM62_GetElementAttributes [BYTE_COUNT_GET_ELEMENT_ATTR_INSTRUCTION] =
+ * {
+ *    0x0B, 0x00, 0x20, 0x00, 0x00, 
+ *    0x0D, 0x00, 0x00, 0x00, 0x00, 
+ *    0x00, 0x00, 0x00, 0x00, 0x00, 
+ *    0x00, 0x00, 0x00, 0x00
+ * };
+ */
 
 BM62::BM62(uint8_t prgm_sense_n, uint8_t reset_n, uint8_t ind_a2dp_n, 
     HardwareSerial* hserial) {
