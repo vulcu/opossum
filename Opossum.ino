@@ -20,14 +20,19 @@
 #include <avr/pgmspace.h>
 
 #include "opossum/opossum.h"
+
 #include "opossum/ledbutton.h"
 #include "opossum/ledbutton.cpp"
+
 #include "opossum/BM62.h"
 #include "opossum/BM62.cpp"
+
 #include "opossum/audiomath.h"
 #include "opossum/audiomath.cpp"
+
 #include "opossum/MAX9744.h"
 #include "opossum/MAX9744.cpp"
+
 #include "opossum/MSGEQ7.h"
 #include "opossum/MSGEQ7.cpp"
 
@@ -37,10 +42,9 @@
 // buffer index, volume, filtered volume, base level, present level
 uint8_t  bufferIndx = 0;
 uint8_t  volumeRange[2];
-int16_t  vol    = 0;
-int16_t  volOut = 0;
-//uint16_t baseLevel  = MSGEQ7_ZERO_SIGNAL_LEVEL;
-uint16_t levelOut   = MSGEQ7_ZERO_SIGNAL_LEVEL;
+int16_t  vol      = 0;
+int16_t  volOut   = 0;
+uint16_t levelOut = MSGEQ7_ZERO_SIGNAL_LEVEL;
 
 // audio levels, audio level buffer, and approx. relative dB levels
 uint16_t levelRead[7];
@@ -51,9 +55,10 @@ uint16_t dBLevels[25];
 uint32_t previousMillis = 0;
 
 // S2 interrupt debounce and timer values
-volatile bool S2_button_read_ACTIVE = false;
-volatile uint8_t S2_interrupt_stateCounter_BUTTON = 0;
-volatile uint32_t S2_button_read_START, S2_interrupt_debounce_START = 0;
+volatile bool     S2_button_read_ACTIVE       = false;
+volatile uint8_t  S2_interrupt_state_COUNT    = 0;
+volatile uint32_t S2_button_read_START        = 0;
+volatile uint32_t S2_interrupt_debounce_START = 0;
 
 // create BM62 driver object
 BM62 bluetooth(PRGM_SENSE_N, RST_N, IND_A2DP_N, &Serial);
@@ -76,13 +81,13 @@ void ISR_BLOCK_S2_FALLING(void) {
   if ((currentMillis - S2_interrupt_debounce_START) > S2_DEBOUNCE_MILLISECONDS) {
     detachInterrupt(S2_INTERRUPT_VECTOR);
     S2_interrupt_debounce_START = currentMillis;
-    if (S2_interrupt_stateCounter_BUTTON == 0) {
+    if (S2_interrupt_state_COUNT == 0) {
       S2_button_read_START = currentMillis;
       S2_button_read_ACTIVE = true;
-      S2_interrupt_stateCounter_BUTTON += 1;
+      S2_interrupt_state_COUNT += 1;
     }
     else if ((S2_interrupt_debounce_START - S2_button_read_START) <= S2_READTIME_MILLISECONDS) {
-      S2_interrupt_stateCounter_BUTTON += 1;
+      S2_interrupt_state_COUNT += 1;
     }
     attachInterrupt(S2_INTERRUPT_VECTOR, ISR_BLOCK_S2_RISING, RISING);
   }
@@ -95,9 +100,9 @@ void ISR_BLOCK_S2_RISING(void) {
   if ((currentMillis - S2_interrupt_debounce_START) > S2_DEBOUNCE_MILLISECONDS) {
     detachInterrupt(S2_INTERRUPT_VECTOR);
     S2_interrupt_debounce_START = currentMillis;
-    if (S2_interrupt_stateCounter_BUTTON != 0) {
+    if (S2_interrupt_state_COUNT != 0) {
       if ((S2_interrupt_debounce_START - S2_button_read_START) <= S2_READTIME_MILLISECONDS) {
-        S2_interrupt_stateCounter_BUTTON += 1;
+        S2_interrupt_state_COUNT += 1;
       }
     }
     attachInterrupt(S2_INTERRUPT_VECTOR, ISR_BLOCK_S2_FALLING, FALLING);
@@ -267,7 +272,7 @@ void setup() {
   //baseLevel = levelOut;
   Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
 
-  S2_interrupt_stateCounter_BUTTON = 0;
+  S2_interrupt_state_COUNT = 0;
 }
 
 
@@ -296,8 +301,8 @@ void loop() {
     if (S2_button_read_ACTIVE) {
       if ((currentMillis - S2_button_read_START) >= (S2_READTIME_MILLISECONDS)) {
         cli();
-        uint8_t S2_buttonStateCount = S2_interrupt_stateCounter_BUTTON;
-        S2_interrupt_stateCounter_BUTTON = 0;
+        uint8_t S2_buttonStateCount = S2_interrupt_state_COUNT;
+        S2_interrupt_state_COUNT = 0;
         S2_button_read_ACTIVE = false;
         sei();
 
