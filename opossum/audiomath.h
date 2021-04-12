@@ -22,8 +22,6 @@
   class Audiomath {
     public:
       static void dBFastRelativeLevel(uint16_t *dBLevels, uint16_t baseLevel);
-      //uint16_t power_uint8(uint8_t base, uint8_t exponent);
-      //int16_t quantizeValueToNearest(int16_t value, uint8_t quantizeStep);
   };
 
 #endif
