@@ -16,6 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// comment to deactivate UART debug mode
+//#define DEBUG
+//#define BM62_DEBUG
+
 // include libraries for PROGMEM, SLEEP, & I2C
 #include <avr/pgmspace.h>
 
@@ -35,9 +39,6 @@
 
 #include "opossum/MSGEQ7.h"
 #include "opossum/MSGEQ7.cpp"
-
-// comment to deactivate UART debug mode
-#define DEBUG
 
 // buffer index, volume, filtered volume, base level, present level
 uint8_t  volumeRange[2];
@@ -218,7 +219,6 @@ void setup() {
 
   // wait for the BM62 to indicate a successful A2DP connection
   waitForConnection();
-  bluetooth.stop();
     
   // set initial MAX9744 amplifier volume parameter and unmute
   vol = analogRead(VOLUME);             // read Volume Control
@@ -280,6 +280,11 @@ void loop() {
         feature_level = ((S2_buttonStateCount == 1) ? 3 :
                         ((S2_buttonStateCount == 2) ? 1 :
                         ((S2_buttonStateCount == 3) ? 4 : 2)));
+        switch (feature_level) {
+          default: {
+            bluetooth.enterPairingMode();
+          } break;
+        }
       }
     } 
 

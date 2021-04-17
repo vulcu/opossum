@@ -25,113 +25,28 @@
 #define BM62_MODULE_PARAMETERS
 
   #define INIT_RESET_CYCLE_WAIT_TIME_MS (uint8_t)10
-
-  #define BYTE_COUNT_UART_HEADER        (uint8_t)2
-
-  #define BYTE_COUNT_A2DP_COMMAND       (uint8_t)7
-  #define BYTE_COUNT_A2DP_PREFIX        (uint8_t)1
-  #define BYTE_COUNT_A2DP_INSTRUCTION   (uint8_t)3
-
-  #define BYTE_COUNT_SYSTEM_COMMAND     (uint8_t)7
-  #define BYTE_COUNT_SYSTEM_PREFIX      (uint8_t)1
-  #define BYTE_COUNT_SYSTEM_INSTRUCTION (uint8_t)3
-
-  // #define BYTE_COUNT_GET_DEVICE_INFO_COMMAND     (uint8_t)6
-  // #define BYTE_COUNT_GET_DEVICE_INFO_PREFIX      (uint8_t)1
-  // #define BYTE_COUNT_GET_DEVICE_INFO_INSTRUCTION (uint8_t)2
-
-  // #define BYTE_COUNT_GET_ELEMENT_ATTR_COMMAND     (uint8_t)23
-  // #define BYTE_COUNT_GET_ELEMENT_ATTR_PREFIX      (uint8_t)1
-  // #define BYTE_COUNT_GET_ELEMENT_ATTR_INSTRUCTION (uint8_t)19
+  #define TARGET_LENGTH_EQ_PRESET       (uint8_t)3
 
 #endif
 
-// BM62 UART communication header bytes
-static const uint8_t BM62_UART_Header [BYTE_COUNT_UART_HEADER] = 
-{
-    0xAA, 0x00
-};
+// BM62 UART syncword size (will either be 0xAA or 0x00AA)
+static const uint8_t serial_uart_sync_header [1] = { 0xAA };
 
 // BM62 UART commands for media playback control
-static const uint8_t BM62_A2DP_Command_Prefix [BYTE_COUNT_A2DP_PREFIX] =
-{
-    0x03
-};
-static const uint8_t BM62_Play [BYTE_COUNT_A2DP_INSTRUCTION] =
-{
-    0x04, 0x00, 0x05
-};
-static const uint8_t BM62_Pause [BYTE_COUNT_A2DP_INSTRUCTION] =
-{
-    0x04, 0x00, 0x06
-};
-static const uint8_t BM62_Stop [BYTE_COUNT_A2DP_INSTRUCTION] =
-{
-    0x04, 0x00, 0x08
-};
-static const uint8_t BM62_Prev_Track [BYTE_COUNT_A2DP_INSTRUCTION] =
-{
-    0x02, 0x00, 0x35
-};
-static const uint8_t BM62_Next_Track [BYTE_COUNT_A2DP_INSTRUCTION] =
-{
-    0x02, 0x00, 0x34
-};
+static const uint8_t BM62_Play       [3] = { 0x04, 0x00, 0x05 };
+static const uint8_t BM62_Pause      [3] = { 0x04, 0x00, 0x06 };
+static const uint8_t BM62_Stop       [3] = { 0x04, 0x00, 0x08 };
+static const uint8_t BM62_Prev_Track [3] = { 0x02, 0x00, 0x35 };
+static const uint8_t BM62_Next_Track [3] = { 0x02, 0x00, 0x34 };
 
 // BM62 UART commands for audio equalization control
-static const uint8_t BM62_EQ_Off [BYTE_COUNT_A2DP_INSTRUCTION] =
-{
-    0x1C, 0x00, 0xFF
-};
-static const uint8_t BM62_EQ_Classical [BYTE_COUNT_A2DP_INSTRUCTION] =
-{
-    0x1C, 0x04, 0xFF
-};
-static const uint8_t BM62_EQ_Jazz [BYTE_COUNT_A2DP_INSTRUCTION] =
-{
-    0x1C, 0x06, 0xFF
-};
-static const uint8_t BM62_EQ_Dance [BYTE_COUNT_A2DP_INSTRUCTION] =
-{
-    0x1C, 0x07, 0xFF
-};
+static const uint8_t BM62_EQ_Off       [3] = { 0x1C, 0x00, 0xFF };
+static const uint8_t BM62_EQ_Classical [3] = { 0x1C, 0x04, 0xFF };
+static const uint8_t BM62_EQ_Jazz      [3] = { 0x1C, 0x06, 0xFF };
+static const uint8_t BM62_EQ_Dance     [3] = { 0x1C, 0x07, 0xFF };
 
 // BM62 UART commands for system status control
-static const uint8_t BM62_SYS_Command_Prefix [BYTE_COUNT_SYSTEM_PREFIX] =
-{
-    0x03
-};
-static const uint8_t BM62_EnterPairingMode [BYTE_COUNT_SYSTEM_INSTRUCTION] =
-{
-    0x02, 0x00, 0x5D
-};
-
-// BM62 UART commands for requesting device information [not implemented]
-/*
- * static const uint8_t BM62_GETDEVICE_Prefix [BYTE_COUNT_GET_DEVICE_INFO_PREFIX] =
- * {
- *     0x02
- * };
- * static const uint8_t BM62_GetDeviceInformation [BYTE_COUNT_GET_DEVICE_INFO_INSTRUCTION] =
- * {
- *     0x0E, 0x00
- * };
- */
-
-// BM62 UART commands for requesting element attributes [not implemented]
-/*
- * static const uint8_t BM62_GETATTRIBUTE_Prefix [BYTE_COUNT_GET_ELEMENT_ATTR_PREFIX] =
- * {
- *    0x13
- * };
- * static const uint8_t BM62_GetElementAttributes [BYTE_COUNT_GET_ELEMENT_ATTR_INSTRUCTION] =
- * {
- *    0x0B, 0x00, 0x20, 0x00, 0x00, 
- *    0x0D, 0x00, 0x00, 0x00, 0x00, 
- *    0x00, 0x00, 0x00, 0x00, 0x00, 
- *    0x00, 0x00, 0x00, 0x00
- * };
- */
+static const uint8_t BM62_EnterPairingMode [3] = { 0x02, 0x00, 0x5D };
 
 BM62::BM62(uint8_t prgm_sense_n, uint8_t reset_n, uint8_t ind_a2dp_n, 
     HardwareSerial* hserial) {
@@ -153,30 +68,28 @@ void BM62::enable(void) {
 // put the BM62 back into pairing mode to permit pairing to new device
 void BM62::enterPairingMode(void) {
   if (isConnected()) {
-    writeSerialCommand(BM62_UART_Header, BM62_SYS_Command_Prefix, BM62_EnterPairingMode, 
-                       BYTE_COUNT_SYSTEM_COMMAND, BYTE_COUNT_SYSTEM_PREFIX, 
-                       BYTE_COUNT_SYSTEM_INSTRUCTION);
+    writeSerialCommand(BM62_EnterPairingMode, (uint16_t)sizeof(BM62_EnterPairingMode));
   }
 }
 
 // set audio equalizer preset to specified preset name
 void BM62::setEqualizerPreset(EQ_Preset_t preset) {
-  uint8_t BM62_EQ_Preset[BYTE_COUNT_A2DP_INSTRUCTION];
+  uint8_t BM62_EQ_Preset[TARGET_LENGTH_EQ_PRESET];
   switch (preset) {
     case EQ_Flat: {
-      memcpy(BM62_EQ_Preset, BM62_EQ_Off, BYTE_COUNT_A2DP_INSTRUCTION);
+      memcpy(BM62_EQ_Preset, BM62_EQ_Off, TARGET_LENGTH_EQ_PRESET);
     } break;
 
     case EQ_Classical: {
-      memcpy(BM62_EQ_Preset, BM62_EQ_Classical, BYTE_COUNT_A2DP_INSTRUCTION);
+      memcpy(BM62_EQ_Preset, BM62_EQ_Classical, TARGET_LENGTH_EQ_PRESET);
     } break;
 
     case EQ_Dance: {
-      memcpy(BM62_EQ_Preset, BM62_EQ_Dance, BYTE_COUNT_A2DP_INSTRUCTION);
+      memcpy(BM62_EQ_Preset, BM62_EQ_Dance, TARGET_LENGTH_EQ_PRESET);
     } break;
 
     case EQ_Jazz: {
-      memcpy(BM62_EQ_Preset, BM62_EQ_Jazz, BYTE_COUNT_A2DP_INSTRUCTION);
+      memcpy(BM62_EQ_Preset, BM62_EQ_Jazz, TARGET_LENGTH_EQ_PRESET);
     } break;
     
     default: {
@@ -184,9 +97,7 @@ void BM62::setEqualizerPreset(EQ_Preset_t preset) {
     } break;
   }
   if (isConnected()) {
-    writeSerialCommand(BM62_UART_Header, BM62_A2DP_Command_Prefix, BM62_EQ_Preset, 
-                       BYTE_COUNT_A2DP_COMMAND, BYTE_COUNT_A2DP_PREFIX, 
-                       BYTE_COUNT_A2DP_INSTRUCTION);
+    writeSerialCommand(BM62_EQ_Preset, (uint16_t)sizeof(BM62_EQ_Preset));
   }
 }
 
@@ -224,45 +135,35 @@ void BM62::reset(void) {
 // start playback from bluetooth-connected media device
 void BM62::play(void) {
   if (isConnected()) {
-    writeSerialCommand(BM62_UART_Header, BM62_A2DP_Command_Prefix, BM62_Play, 
-                       BYTE_COUNT_A2DP_COMMAND, BYTE_COUNT_A2DP_PREFIX, 
-                       BYTE_COUNT_A2DP_INSTRUCTION);
+    writeSerialCommand(BM62_Play, (uint16_t)sizeof(BM62_Play));
   }
 }
 
 // pause playback from bluetooth-connected media device
 void BM62::pause(void) {
   if (isConnected()) {
-    writeSerialCommand(BM62_UART_Header, BM62_A2DP_Command_Prefix, BM62_Pause, 
-                       BYTE_COUNT_A2DP_COMMAND, BYTE_COUNT_A2DP_PREFIX, 
-                       BYTE_COUNT_A2DP_INSTRUCTION);
+    writeSerialCommand(BM62_Pause, (uint16_t)sizeof(BM62_Pause));
   }
 }
 
 // stop playback from bluetooth-connected media device
 void BM62::stop(void) {
   if (isConnected()) {
-    writeSerialCommand(BM62_UART_Header, BM62_A2DP_Command_Prefix, BM62_Stop, 
-                       BYTE_COUNT_A2DP_COMMAND, BYTE_COUNT_A2DP_PREFIX, 
-                       BYTE_COUNT_A2DP_INSTRUCTION);
+    writeSerialCommand(BM62_Stop, (uint16_t)sizeof(BM62_Stop));
   }
 }
 
 // go to previous track on bluetooth-connected media device
 void BM62::previous(void) {
   if (isConnected()) {
-    writeSerialCommand(BM62_UART_Header, BM62_A2DP_Command_Prefix, BM62_Prev_Track, 
-                       BYTE_COUNT_A2DP_COMMAND, BYTE_COUNT_A2DP_PREFIX, 
-                       BYTE_COUNT_A2DP_INSTRUCTION);
+    writeSerialCommand(BM62_Prev_Track, (uint16_t)sizeof(BM62_Prev_Track));
   }
 }
 
 // go to next track on bluetooth-connected media device
 void BM62::next(void) {
   if (isConnected()) {
-    writeSerialCommand(BM62_UART_Header, BM62_A2DP_Command_Prefix, BM62_Next_Track, 
-                       BYTE_COUNT_A2DP_COMMAND, BYTE_COUNT_A2DP_PREFIX, 
-                       BYTE_COUNT_A2DP_INSTRUCTION);
+    writeSerialCommand(BM62_Next_Track, (uint16_t)sizeof(BM62_Next_Track));
   }
 }
 
@@ -293,16 +194,41 @@ void BM62::isProgramMode(void) {
 }
 
 // build the BM62 UART command array w/ checksum and write over serial UART
-void BM62::writeSerialCommand(const uint8_t *header, const uint8_t *prefix, 
-                              const uint8_t *instruction, const uint8_t bytes_command,
-                              const uint8_t bytes_prefix, const uint8_t bytes_instruction) {
-  uint8_t command[bytes_command];
-  memcpy(command, header, BYTE_COUNT_UART_HEADER);
-  uint8_t indx = BYTE_COUNT_UART_HEADER;
-  memcpy(command + indx, prefix, bytes_prefix);
-  indx += bytes_prefix;
-  memcpy(command + indx, instruction, bytes_instruction);
-  indx += bytes_instruction;
+void BM62::writeSerialCommand(const uint8_t *instruction, uint16_t bytes_command) {
+  // allocation size in bytes of the serial syncword
+  uint8_t bytes_syncword = sizeof(serial_uart_sync_header);
+
+  // allocation size in bytes of the length value (2 bytes) plus the CRC value (1 byte)
+  uint8_t bytes_length_and_crc = 3;
+
+  // create the command buffer, the size will always be equal to
+  // [START(1-2 bytes) + LENGTH(2 bytes) + INSTRUCTION + CRC(1 byte)]
+  uint8_t command[bytes_syncword + bytes_length_and_crc + bytes_command];
+
+  // copy the serial UART syncword (either 0xAA or 0x00AA) to the command buffer
+  memcpy(command, serial_uart_sync_header, bytes_syncword);
+  uint8_t indx = bytes_syncword;
+
+  // copy 'target length' (total length minus syncword, length, and CRC) to command buffer
+  uint8_t  target_length [2] = { highByte(bytes_command), lowByte(bytes_command) };
+  memcpy(command + indx, target_length, sizeof(target_length));
+  indx += sizeof(target_length);
+
+  // copy the actual instruction to the command buffer
+  memcpy(command + indx, instruction, bytes_command);
+  indx += bytes_command;
+
+  // calculate the checksum and write this value to the last element of the command buffer
   command[indx] = checksum(command, indx + 1);
+
+  // write the command buffer to the serial output
   hserial->write(command, bytes_command);
+
+#ifdef BM62_DEBUG
+  hserial->println("--");
+  for (uint8_t k = 0; k < sizeof(command); k++) {
+    hserial->println(command[k], HEX);
+  }
+  hserial->println("--");
+#endif
 }
