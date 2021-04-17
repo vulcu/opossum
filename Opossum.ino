@@ -51,6 +51,20 @@ uint16_t levelRead[MSGEQ7_SIGNAL_BAND_COUNT];
 uint16_t levelBuf[LEVEL_TRACK_BUFFER_SIZE];
 uint16_t dBLevels[LEVEL_TRACK_BUFFER_SIZE];
 
+// for tracking automatic gain control and EQ mode feature states
+bool    feature_AGC_mode = false;
+uint8_t feature_EQ_mode  = 0;
+
+// correlates to the number of switch state transitions registered [1, 2, 3, or 4]
+enum feature 
+{
+  feature_null,
+  feature_pairing,
+  feature_playback,
+  feature_equalizer,
+  feature_autovolume
+};
+
 // time of most recent audio level read (rolls over after about 50 days)
 uint32_t previousMillis = 0;
 
@@ -113,8 +127,10 @@ void ISR_BLOCK_S2_RISING(void) {
 // wait for BM62 to indicate a successful A2DP connection
 void waitForConnection(void) {
   // keep track of PWM level and direction for each switch LED
-  bool     S1_PWM_DIR, S2_PWM_DIR = HIGH;  // HIGH = rising, LOW = falling
-  uint16_t S1_PWM_VAL, S2_PWM_VAL = 0;     // PWM analogWrite value
+  bool S1_PWM_DIR = HIGH;  // HIGH = rising, LOW = falling 
+  bool S2_PWM_DIR = HIGH;  // HIGH = rising, LOW = falling
+  uint16_t S1_PWM_VAL = 0;     // PWM analogWrite value for S1
+  uint16_t S2_PWM_VAL = 0;     // PWM analogWrite value for S2
 
   while (!bluetooth.isConnected()) {
     // get the elapsed time, in milliseconds, since power-on
@@ -170,7 +186,7 @@ void waitForConnection(void) {
   // set the S1 LED brightness to the default 'on' value
   led_SW1.brightness(S1_PWM_DEF);
 
-  // wait 200 ms to avoid BM62 missing UART reads
+  // wait 200 ms to help avoid BM62 missing UART reads
   delay(200);
 }
 
@@ -254,8 +270,10 @@ void loop() {
     bluetooth.stop();
   }
 
-  // feature level [1=play/pause, 2=autovolume on/off, 3=disconnect, 4=EQ On/Off]
-  uint8_t feature_level = 0;
+  // debug feature for tracking switch functionality
+  #if defined DEBUG
+    int16_t feature_level_select = 0;
+  #endif
 
   // get the elapsed time, in millisecionds, since power-on
   uint32_t currentMillis = millis();
@@ -278,12 +296,43 @@ void loop() {
         S2_button_read_ACTIVE = false;
         sei();
 
-        feature_level = ((S2_buttonStateCount == 1) ? 3 :
-                        ((S2_buttonStateCount == 2) ? 1 :
-                        ((S2_buttonStateCount == 3) ? 4 : 2)));
+        #if defined DEBUG
+          feature_level_select = ((S2_buttonStateCount == 1) ? 3 :
+                                 ((S2_buttonStateCount == 2) ? 1 :
+                                 ((S2_buttonStateCount == 3) ? 4 : 2)));
+        #endif
+
+        // feature level [1=pairing mode, 2=play/pause, 3=EQ mode, 4=autovolume on/off]
+        feature feature_level = ((S2_buttonStateCount == 1) ? feature_pairing    :
+                                ((S2_buttonStateCount == 2) ? feature_playback   :
+                                ((S2_buttonStateCount == 3) ? feature_equalizer  : 
+                                ((S2_buttonStateCount == 4) ? feature_autovolume : feature_null))));
         switch (feature_level) {
-          default: {
+          case feature_pairing: {
             bluetooth.enterPairingMode();
+          } break;
+
+          case feature_playback: {
+            // media playback play/pause code goes here
+          } break;
+
+          case feature_equalizer: {
+            if (!feature_EQ_mode) {
+              bluetooth.setEqualizerPreset(bluetooth.EQ_Classical);
+              feature_EQ_mode = true;
+            }
+            else {
+              bluetooth.setEqualizerPreset(bluetooth.EQ_Flat);
+              feature_EQ_mode = false;
+            }
+          } break;
+
+          case feature_autovolume: {
+            // automatic gain control enable/disable code goes here
+          } break;
+
+          default: {
+            // too many button presses or something went wrong, so do nothing
           } break;
         }
       }
@@ -295,7 +344,7 @@ void loop() {
       Serial.print(" ");
       Serial.print(levelDebug[1]);
       Serial.print(" ");
-      Serial.print((int16_t)feature_level * 1000);
+      Serial.print((int16_t)feature_level_select * 1000);
       Serial.print(" \n");
     #endif
   }
@@ -314,7 +363,7 @@ void loop() {
       Serial.print(" ");
       Serial.print(levelOut);
       Serial.print(" ");
-      Serial.print((int16_t)feature_level * 1000);
+      Serial.print((int16_t)feature_level_select * 1000);
       Serial.print(" ");
       for(uint8_t k = 0; k < 2; k++) {
         Serial.print(volumeRange[k]);
