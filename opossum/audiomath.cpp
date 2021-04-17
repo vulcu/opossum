@@ -20,6 +20,8 @@
 
 #include "audiomath.h"
 
+static uint8_t bufferIndx = 0;
+
 // Coefficient table for fast dB approximations
 static const uint16_t dBCoefTable[25] PROGMEM =
 { 
@@ -35,4 +37,35 @@ void Audiomath::dBFastRelativeLevel(uint16_t *dBLevels, uint16_t baseLevel) {
   for(uint8_t k = 0; k < 25; k++) {
     dBLevels[k] = ((uint32_t)baseLevel * pgm_read_word(&(dBCoefTable[k]))) >> 12;
   }
+}
+
+// use a 32-value circular buffer to track audio levels
+uint16_t Audiomath::decayBuffer32(uint16_t *levelBuf, uint16_t levelReadMean, 
+                                  const uint16_t nominal_signal_level) {
+  if (bufferIndx >= 32) {
+    bufferIndx = 0;
+  }
+  if (levelReadMean > levelBuf[bufferIndx]) {
+    // if the new value is greater, use value halfway between old and new
+    levelBuf[bufferIndx] = levelBuf[bufferIndx] +
+      ((levelReadMean - levelBuf[bufferIndx]) >> 1);
+  }
+  else if (levelReadMean < ((nominal_signal_level * (uint16_t)18) >> 4)) {
+    // if the latest level is less a small % over the nominal zero signal,
+    // there's probs no significant audio signal so don't update buffer
+  }
+  else {
+    // otherwise, decay the current value by approximately 3%
+    levelBuf[bufferIndx] = (levelBuf[bufferIndx] * 31L) >> 5;
+  }
+  bufferIndx++;
+
+  // calculate total sum of exponential buffer array
+  uint32_t sum = 0;
+  for (uint16_t k = 0; k < 32; k++) {
+    sum = sum + levelBuf[k];
+  }
+
+  // divide the sum by 32 and return the array mean
+  return sum >> 5; 
 }
