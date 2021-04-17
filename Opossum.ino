@@ -126,8 +126,10 @@ void ISR_BLOCK_S2_RISING(void) {
 // wait for BM62 to indicate a successful A2DP connection
 void waitForConnection(void) {
   // keep track of PWM level and direction for each switch LED
-  bool     S1_PWM_DIR, S2_PWM_DIR = HIGH;  // HIGH = rising, LOW = falling
-  uint16_t S1_PWM_VAL, S2_PWM_VAL = 0;     // PWM analogWrite value
+  bool S1_PWM_DIR = HIGH;  // HIGH = rising, LOW = falling 
+  bool S2_PWM_DIR = HIGH;  // HIGH = rising, LOW = falling
+  uint16_t S1_PWM_VAL = 0;     // PWM analogWrite value for S1
+  uint16_t S2_PWM_VAL = 0;     // PWM analogWrite value for S2
 
   while (!bluetooth.isConnected()) {
     // get the elapsed time, in milliseconds, since power-on
@@ -183,7 +185,7 @@ void waitForConnection(void) {
   // set the S1 LED brightness to the default 'on' value
   led_SW1.brightness(S1_PWM_DEF);
 
-  // wait 200 ms to avoid BM62 missing UART reads
+  // wait 200 ms to help avoid BM62 missing UART reads
   delay(200);
 }
 
