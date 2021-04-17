@@ -222,7 +222,7 @@ void BM62::writeSerialCommand(const uint8_t *instruction, uint16_t bytes_command
   command[indx] = checksum(command, indx + 1);
 
   // write the command buffer to the serial output
-  hserial->write(command, bytes_command);
+  hserial->write(command, sizeof(command));
 
 #ifdef BM62_DEBUG
   hserial->println("--");
