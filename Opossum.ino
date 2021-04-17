@@ -46,9 +46,9 @@ int16_t  volOut   = 0;
 uint16_t levelOut = MSGEQ7_ZERO_SIGNAL_LEVEL;
 
 // audio levels, audio level buffer, and approx. relative dB levels
-uint16_t levelRead[7];
-uint16_t levelBuf[32];
-uint16_t dBLevels[25];
+uint16_t levelRead[MSGEQ7_SIGNAL_BAND_COUNT];
+uint16_t levelBuf[LEVEL_TRACK_BUFFER_SIZE];
+uint16_t dBLevels[LEVEL_TRACK_BUFFER_SIZE];
 
 // time of most recent audio level read (rolls over after about 50 days)
 uint32_t previousMillis = 0;
