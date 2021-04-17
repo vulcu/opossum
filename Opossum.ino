@@ -219,6 +219,7 @@ void setup() {
 
   // wait for the BM62 to indicate a successful A2DP connection
   waitForConnection();
+  bluetooth.stop();
     
   // set initial MAX9744 amplifier volume parameter and unmute
   vol = analogRead(VOLUME);             // read Volume Control
