@@ -240,6 +240,8 @@ void setup() {
   // initialize base volume level and relative dB values
   Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
 
+  // interrupt will often glitch and count when first enabled, so reset this here
+  // (after establishing BT connection which gives us a delay) without checking it
   S2_interrupt_state_COUNT = 0;
 }
 
@@ -251,7 +253,7 @@ void loop() {
     bluetooth.stop();
   }
 
-  // feature level [1=autovolume on/off, 2=play/pause, 3=disconnect 4=reserved]
+  // feature level [1=play/pause, 2=autovolume on/off, 3=disconnect, 4=EQ On/Off]
   uint8_t feature_level = 0;
 
   // get the elapsed time, in millisecionds, since power-on
