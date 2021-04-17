@@ -40,7 +40,6 @@
 #define DEBUG
 
 // buffer index, volume, filtered volume, base level, present level
-uint8_t  bufferIndx = 0;
 uint8_t  volumeRange[2];
 int16_t  vol      = 0;
 int16_t  volOut   = 0;
@@ -175,37 +174,6 @@ void waitForConnection(void) {
 }
 
 
-// use a 32-value circular buffer to track audio levels
-uint16_t expDecayBuf(uint16_t levelReadMean) {
-  if (bufferIndx >= 32) {
-    bufferIndx = 0;
-  }
-  if (levelReadMean > levelBuf[bufferIndx]) {
-    // if the new value is greater, use value halfway between old and new
-    levelBuf[bufferIndx] = levelBuf[bufferIndx] +
-      ((levelReadMean - levelBuf[bufferIndx]) >> 1);
-  }
-  else if (levelReadMean < ((MSGEQ7_ZERO_SIGNAL_LEVEL * (uint16_t)18) >> 4)) {
-    // if the latest level is less a small % over the nominal zero signal,
-    // there's probs no significant audio signal so don't update buffer
-  }
-  else {
-    // otherwise, decay the current value by approximately 3%
-    levelBuf[bufferIndx] = (levelBuf[bufferIndx] * 31L) >> 5;
-  }
-  bufferIndx++;
-
-  // calculate total sum of exponential buffer array
-  uint32_t sum = 0;
-  for (int k = 0; k < 32; k++) {
-    sum = sum + levelBuf[k];
-  }
-
-  // divide by 32 and return array mean
-  return sum >> 5; 
-}
-
-
 // calculate allowable MAX9744 volume adjustment range
 void updateVolumeRange(void) {
   uint8_t CurrentVolumeLevel = lowByte(volOut >> 4);
@@ -266,10 +234,10 @@ void setup() {
   
   // read weighted audio level data, find mean, calculate buffer value
   spectrum.read(levelRead);
-  levelOut = expDecayBuf(spectrum.mean(levelRead));
+  levelOut = Audiomath::decayBuffer32(levelBuf, spectrum.mean(levelRead),
+                                      MSGEQ7_ZERO_SIGNAL_LEVEL);
 
   // initialize base volume level and relative dB values
-  //baseLevel = levelOut;
   Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
 
   S2_interrupt_state_COUNT = 0;
@@ -296,7 +264,8 @@ void loop() {
 
     // read weighted audio level data, find mean, calculate buffer value
     spectrum.read(levelRead);
-    levelOut = expDecayBuf(spectrum.mean(levelRead));
+    levelOut = Audiomath::decayBuffer32(levelBuf, spectrum.mean(levelRead),
+                                        MSGEQ7_ZERO_SIGNAL_LEVEL);
 
     if (S2_button_read_ACTIVE) {
       if ((currentMillis - S2_button_read_START) >= (S2_READTIME_MILLISECONDS)) {
@@ -330,7 +299,6 @@ void loop() {
     amplifier.volume(lowByte(volOut >> 4));
     volOut = vol;
     updateVolumeRange();
-    //baseLevel = levelOut;
     Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
 
     #if defined DEBUG
