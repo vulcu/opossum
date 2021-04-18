@@ -21,14 +21,20 @@
 
   class BM62 {
     public:
-      // These are the available audio equalizer presets:
-      // EQ_Flat, EQ_Classical, EQ_Dance, EQ_Jazz
+      // These are the equalizer preset modes available on the BM62
       enum EQ_Preset_t
       {
-        EQ_Flat, 
+        EQ_Off, 
+        EQ_Soft, 
+        EQ_Bass, 
+        EQ_Treble, 
         EQ_Classical, 
+        EQ_Rock, 
+        EQ_Jazz, 
+        EQ_Pop, 
         EQ_Dance,
-        EQ_Jazz
+        EQ_RnB, 
+        EQ_Custom
       };
 
       BM62(uint8_t prgm_sense_n, uint8_t reset_n, uint8_t ind_a2dp_n, 
@@ -42,6 +48,7 @@
       void setEqualizerPreset(EQ_Preset_t preset);
       void play(void);
       void pause(void);
+      void playPauseToggle(void);
       void stop(void);
       void previous(void);
       void next(void);

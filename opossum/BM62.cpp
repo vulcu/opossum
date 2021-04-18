@@ -29,23 +29,35 @@
 
 #endif
 
-// BM62 UART syncword size (will either be 0xAA or 0x00AA)
+// BM62 UART syncword header for serial commands (probably 0xAA, may be 0x00AA)
+// < EEPROM option (0xAE @ bit 4) adds “0x00” as wakeup byte in front of start byte >
 static const uint8_t serial_uart_sync_header [1] = { 0xAA };
 
 // BM62 UART commands for media playback control
-static const uint8_t BM62_Play       [3] = { 0x04, 0x00, 0x05 };
-static const uint8_t BM62_Pause      [3] = { 0x04, 0x00, 0x06 };
-static const uint8_t BM62_Stop       [3] = { 0x04, 0x00, 0x08 };
-static const uint8_t BM62_Prev_Track [3] = { 0x02, 0x00, 0x35 };
-static const uint8_t BM62_Next_Track [3] = { 0x02, 0x00, 0x34 };
+// < Music_Control (0x04): AVRCP Commands for Music Control >
+static const uint8_t BM62_Play        [3] = { 0x04, 0x00, 0x05 };
+static const uint8_t BM62_Pause       [3] = { 0x04, 0x00, 0x06 };
+static const uint8_t BM62_Play_Toggle [3] = { 0x04, 0x00, 0x07 };
+static const uint8_t BM62_Stop        [3] = { 0x04, 0x00, 0x08 };
+static const uint8_t BM62_Next_Track  [3] = { 0x04, 0x00, 0x09 };
+static const uint8_t BM62_Prev_Track  [3] = { 0x04, 0x00, 0x0A };
 
 // BM62 UART commands for audio equalization control
+// < EQ_Mode_Setting 0x1C: Set EQ Mode of BTM for audio playback >
 static const uint8_t BM62_EQ_Off       [3] = { 0x1C, 0x00, 0xFF };
+static const uint8_t BM62_EQ_Soft      [3] = { 0x1C, 0x01, 0xFF };
+static const uint8_t BM62_EQ_Bass      [3] = { 0x1C, 0x02, 0xFF };
+static const uint8_t BM62_EQ_Treble    [3] = { 0x1C, 0x03, 0xFF };
 static const uint8_t BM62_EQ_Classical [3] = { 0x1C, 0x04, 0xFF };
+static const uint8_t BM62_EQ_Rock      [3] = { 0x1C, 0x05, 0xFF };
 static const uint8_t BM62_EQ_Jazz      [3] = { 0x1C, 0x06, 0xFF };
-static const uint8_t BM62_EQ_Dance     [3] = { 0x1C, 0x07, 0xFF };
+static const uint8_t BM62_EQ_Pop       [3] = { 0x1C, 0x07, 0xFF };
+static const uint8_t BM62_EQ_Dance     [3] = { 0x1C, 0x08, 0xFF };
+static const uint8_t BM62_EQ_RnB       [3] = { 0x1C, 0x09, 0xFF };
+static const uint8_t BM62_EQ_USER1     [3] = { 0x1C, 0x0A, 0xFF };
 
-// BM62 UART commands for system status control
+// BM62 UART commands for system status and control
+// < MMI action 0x5D: fast enter pairing mode (from non-off mode) >
 static const uint8_t BM62_EnterPairingMode [3] = { 0x02, 0x00, 0x5D };
 
 BM62::BM62(uint8_t prgm_sense_n, uint8_t reset_n, uint8_t ind_a2dp_n, 
@@ -72,28 +84,56 @@ void BM62::enterPairingMode(void) {
   }
 }
 
-// set audio equalizer preset to specified preset name
+// set audio equalizer mode setting to specified preset mode
 void BM62::setEqualizerPreset(EQ_Preset_t preset) {
   uint8_t BM62_EQ_Preset[TARGET_LENGTH_EQ_PRESET];
   switch (preset) {
-    case EQ_Flat: {
+    case EQ_Off: {
       memcpy(BM62_EQ_Preset, BM62_EQ_Off, TARGET_LENGTH_EQ_PRESET);
+    } break;
+
+    case EQ_Soft: {
+      memcpy(BM62_EQ_Preset, BM62_EQ_Soft, TARGET_LENGTH_EQ_PRESET);
+    } break;
+
+    case EQ_Bass: {
+      memcpy(BM62_EQ_Preset, BM62_EQ_Bass, TARGET_LENGTH_EQ_PRESET);
+    } break;
+
+    case EQ_Treble: {
+      memcpy(BM62_EQ_Preset, BM62_EQ_Treble, TARGET_LENGTH_EQ_PRESET);
     } break;
 
     case EQ_Classical: {
       memcpy(BM62_EQ_Preset, BM62_EQ_Classical, TARGET_LENGTH_EQ_PRESET);
     } break;
 
-    case EQ_Dance: {
-      memcpy(BM62_EQ_Preset, BM62_EQ_Dance, TARGET_LENGTH_EQ_PRESET);
+    case EQ_Rock: {
+      memcpy(BM62_EQ_Preset, BM62_EQ_Rock, TARGET_LENGTH_EQ_PRESET);
     } break;
 
     case EQ_Jazz: {
       memcpy(BM62_EQ_Preset, BM62_EQ_Jazz, TARGET_LENGTH_EQ_PRESET);
     } break;
-    
+
+    case EQ_Pop: {
+      memcpy(BM62_EQ_Preset, BM62_EQ_Pop, TARGET_LENGTH_EQ_PRESET);
+    } break;
+
+    case EQ_Dance: {
+      memcpy(BM62_EQ_Preset, BM62_EQ_Dance, TARGET_LENGTH_EQ_PRESET);
+    } break;
+
+    case EQ_RnB: {
+      memcpy(BM62_EQ_Preset, BM62_EQ_RnB, TARGET_LENGTH_EQ_PRESET);
+    } break;
+
+    case EQ_Custom: {
+      memcpy(BM62_EQ_Preset, BM62_EQ_USER1, TARGET_LENGTH_EQ_PRESET);
+    } break;
+
     default: {
-      return; //invalid reset request so don't do anything
+      return; // if we're here something went wrong so don't send a command
     } break;
   }
   if (isConnected()) {
@@ -143,6 +183,13 @@ void BM62::play(void) {
 void BM62::pause(void) {
   if (isConnected()) {
     writeSerialCommand(BM62_Pause, (uint16_t)sizeof(BM62_Pause));
+  }
+}
+
+// media playback play/pause toggle (pauses if playing, plays if paused)
+void BM62::playPauseToggle(void) {
+  if (isConnected()) {
+    writeSerialCommand(BM62_Play_Toggle, (uint16_t)sizeof(BM62_Play_Toggle));
   }
 }
 
