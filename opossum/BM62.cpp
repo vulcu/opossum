@@ -272,10 +272,11 @@ void BM62::writeSerialCommand(const uint8_t *instruction, uint16_t bytes_command
   hserial->write(command, sizeof(command));
 
 #ifdef BM62_DEBUG
-  hserial->println("--");
+  hserial->print("\n");
+  hserial->print("--\n");
   for (uint8_t k = 0; k < sizeof(command); k++) {
     hserial->println(command[k], HEX);
   }
-  hserial->println("--");
+  hserial->print("--\n");
 #endif
 }
