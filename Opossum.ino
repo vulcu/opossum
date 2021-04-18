@@ -353,8 +353,6 @@ void loop() {
       Serial.print(" ");
       Serial.print(levelOut);
       Serial.print(" ");
-      Serial.print((int16_t)feature_level_select * 1000);
-      Serial.print(" ");
       for(uint8_t k = 0; k < 2; k++) {
         Serial.print(volumeRange[k]);
         Serial.print(" ");
