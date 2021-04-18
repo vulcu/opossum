@@ -270,11 +270,6 @@ void loop() {
     bluetooth.stop();
   }
 
-  // debug feature for tracking switch functionality
-  #if defined DEBUG
-    int16_t feature_level_select = 0;
-  #endif
-
   // get the elapsed time, in millisecionds, since power-on
   uint32_t currentMillis = millis();
 
@@ -331,12 +326,6 @@ void loop() {
             // too many button presses or something went wrong, so do nothing
           } break;
         }
-
-        #if defined DEBUG
-          feature_level_select = ((S2_buttonStateCount == 1) ? 3 :
-                                 ((S2_buttonStateCount == 2) ? 1 :
-                                 ((S2_buttonStateCount == 3) ? 4 : 2)));
-        #endif
       }
     } 
 
@@ -345,8 +334,6 @@ void loop() {
       Serial.print(levelDebug[0]);
       Serial.print(" ");
       Serial.print(levelDebug[1]);
-      Serial.print(" ");
-      Serial.print((int16_t)feature_level_select * 1000);
       Serial.print(" \n");
     #endif
   }
