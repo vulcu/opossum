@@ -236,15 +236,15 @@ void setup() {
   // wait for the BM62 to indicate a successful A2DP connection
   waitForConnection();
   bluetooth.stop();
-    
+  
   // set initial MAX9744 amplifier volume parameter and unmute
   vol = analogRead(VOLUME);             // read Volume Control
   amplifier.volume(lowByte(vol >> 4));
   volOut = vol;
-  void updateVolumeRange();
+  updateVolumeRange();
   amplifier.unmute();
   
-  // initialize levelBuf to 'zero-signal' value
+  // initialize levelBuf to nominal 'zero-signal' value
   for (uint8_t k = 0; k < 32; k++) {
     levelBuf[k] = MSGEQ7_ZERO_SIGNAL_LEVEL;
   }
@@ -303,11 +303,13 @@ void loop() {
                              ((S2_buttonStateCount == 4) ? feature_autovolume : feature_null))));
         switch (S2_feature) {
           case feature_pairing: {
+            // MMI action, fast enter pairing mode (from non-off mode)
             bluetooth.enterPairingMode();
           } break;
 
           case feature_playback: {
-            // media playback play/pause code goes here
+            // media playback play/pause toggle (pauses if playing, plays if paused)
+            bluetooth.playPauseToggle();
           } break;
 
           case feature_equalizer: {
@@ -316,7 +318,7 @@ void loop() {
               feature_EQ_mode = true;
             }
             else {
-              bluetooth.setEqualizerPreset(bluetooth.EQ_Flat);
+              bluetooth.setEqualizerPreset(bluetooth.EQ_Off);
               feature_EQ_mode = false;
             }
           } break;
@@ -351,9 +353,10 @@ void loop() {
  
   vol = analogRead(VOLUME); // read Channel A0
   
-  // ignore two LSB to filter noise and prevent output level oscillations
-  if (abs(volOut - vol) > 4) {
-    amplifier.volume(lowByte(volOut >> 4));
+  // ignore three LSB to filter noise and prevent output level oscillations
+  if (abs(volOut - vol) > 8) {
+    amplifier.volume(lowByte(
+      volOut >> 4));
     volOut = vol;
     updateVolumeRange();
     Audiomath::dBFastRelativeLevel(dBLevels, levelOut);

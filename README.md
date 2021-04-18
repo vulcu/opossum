@@ -25,7 +25,7 @@ At present, the system will automatically connect to a device via bluetooth, pla
   * ~~volume range update~~ _won't do, makes sense to leave where it is_
   * ~~circular level tracking buffer~~ _done_
 * the button interrupts are working and accurately debounce and count _**N**_ switch transitions within period _**T**_, now that count needs to be used to:
-  1) [single button press] play/pause media playback
+  1) ~~[single button press] play/pause media playback~~ _done_
   2) [double button press] turn automatic gain control on/off
   3) ~~[press and hold down] disconnect bluetooth and enter pairing mode~~ _done_
   4) ~~[press once, then press again and hold] enable/disable EQ preset~~ _done_
