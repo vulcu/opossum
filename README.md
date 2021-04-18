@@ -27,8 +27,8 @@ At present, the system will automatically connect to a device via bluetooth, pla
 * the button interrupts are working and accurately debounce and count _**N**_ switch transitions within period _**T**_, now that count needs to be used to:
   1) [single button press] play/pause media playback
   2) [double button press] turn automatic gain control on/off
-  3) [press and hold down] disconnect bluetooth and enter pairing mode 
-  4) [press once, then press again and hold] enable/disable EQ preset
+  3) ~~[press and hold down] disconnect bluetooth and enter pairing mode~~ _done_
+  4) ~~[press once, then press again and hold] enable/disable EQ preset~~ _done_
 * connect up the spectrum level detection algorithm to the amplifier volume control such that the first controls the second
   * the 'adjustment range' needs to be mapped to the available gain steps which exist relative to the present gain setting, since this varies
   * this is also going to need some kind of hysterysis

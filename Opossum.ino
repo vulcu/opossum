@@ -17,7 +17,7 @@
  */
 
 // comment to deactivate UART debug mode
-//#define DEBUG
+#define DEBUG
 //#define BM62_DEBUG
 
 // include libraries for PROGMEM, SLEEP, & I2C
@@ -55,7 +55,7 @@ uint16_t dBLevels[LEVEL_TRACK_BUFFER_SIZE];
 bool    feature_AGC_mode = false;
 uint8_t feature_EQ_mode  = 0;
 
-// correlates to the number of switch state transitions registered [1, 2, 3, or 4]
+// correlates to the number of switch state transitions registered [0, 1, 2, 3, or 4]
 enum feature 
 {
   feature_null,
@@ -296,18 +296,12 @@ void loop() {
         S2_button_read_ACTIVE = false;
         sei();
 
-        #if defined DEBUG
-          feature_level_select = ((S2_buttonStateCount == 1) ? 3 :
-                                 ((S2_buttonStateCount == 2) ? 1 :
-                                 ((S2_buttonStateCount == 3) ? 4 : 2)));
-        #endif
-
-        // feature level [1=pairing mode, 2=play/pause, 3=EQ mode, 4=autovolume on/off]
-        feature feature_level = ((S2_buttonStateCount == 1) ? feature_pairing    :
-                                ((S2_buttonStateCount == 2) ? feature_playback   :
-                                ((S2_buttonStateCount == 3) ? feature_equalizer  : 
-                                ((S2_buttonStateCount == 4) ? feature_autovolume : feature_null))));
-        switch (feature_level) {
+        // switch 2 feature [1=pairing mode, 2=play/pause, 3=EQ mode, 4=autovolume on/off]
+        feature S2_feature = ((S2_buttonStateCount == 1) ? feature_pairing    :
+                             ((S2_buttonStateCount == 2) ? feature_playback   :
+                             ((S2_buttonStateCount == 3) ? feature_equalizer  : 
+                             ((S2_buttonStateCount == 4) ? feature_autovolume : feature_null))));
+        switch (S2_feature) {
           case feature_pairing: {
             bluetooth.enterPairingMode();
           } break;
@@ -335,6 +329,12 @@ void loop() {
             // too many button presses or something went wrong, so do nothing
           } break;
         }
+
+        #if defined DEBUG
+          feature_level_select = ((S2_buttonStateCount == 1) ? 3 :
+                                 ((S2_buttonStateCount == 2) ? 1 :
+                                 ((S2_buttonStateCount == 3) ? 4 : 2)));
+        #endif
       }
     } 
 
