@@ -18,26 +18,26 @@
 
 #include "MAX9744.h"
 
-// MAX9744 amplifier gain levels (dB), multiplied
-// by 10x to allow PROGMEM storage as int16_t
-static const int16_t MAX9744GainLevel[64] PROGMEM = 
+// MAX9744 amplifier gain levels (dB), stored as milli-Bells 
+// (1/100 of a dB) to allow PROGMEM storage as an int type
+static const int16_t MAX9744Gain_milliBels[64] PROGMEM = 
 {
-  95,    88,    82,    76,
-  70,    65,    59,    54,
-  49,    44,    39,    34,
-  29,    24,    20,    16,
-  12,     5,    -5,    -19,
-  -34,   -50,   -60,   -71,
-  -89,   -99,   -109,  -120,
-  -131,  -144,  -154,  -164,
-  -175,  -197,  -216,  -235,
-  -252,  -272,  -298,  -315,
-  -334,  -360,  -376,  -396,
-  -421,  -437,  -456,  -481,
-  -506,  -542,  -567,  -602,
-  -627,  -662,  -687,  -722,
-  -747,  -783,  -808,  -843,
-  -868,  -903,  -929,  -1095
+    950,    880,    820,    760,
+    700,    650,    590,    540,
+    490,    440,    390,    340,
+    290,    240,    200,    160,
+    120,     50,    -50,   -190,
+   -340,   -500,   -600,   -710,
+   -890,   -990,  -1090,  -1200,
+  -1310,  -1440,  -1540,  -1640,
+  -1750,  -1970,  -2160,  -2350,
+  -2520,  -2720,  -2980,  -3150,
+  -3340,  -3600,  -3760,  -3960,
+  -4210,  -4370,  -4560,  -4810,
+  -5060,  -5420,  -5670,  -6020,
+  -6270,  -6620,  -6870,  -7220,
+  -7470,  -7830,  -8080,  -8430,
+  -8680,  -9030,  -9290,  -10950
 };
 
 // class constructor for MAX9744 amplifier object
@@ -57,6 +57,20 @@ void MAX9744::init(void) {
   // mute the MAX9744 then take it out of shutdown
   mute();
   enable();
+}
+
+// return the dB gain values correllating amplifier volume settings
+void MAX9744::convertVolumeToGain(uint8_t start, uint8_t stop, int16_t *values, size_t size) {
+  uint8_t index_minimum = ((start <= stop) ? start : stop);
+  uint8_t index_maximum = ((start  > stop) ? start : stop);
+  if ((index_maximum - index_minimum) > size) {
+    return;   // the `values[]` array is not large enough to contain the requested range
+  }
+  else {
+    for (uint8_t k = index_minimum; k <= index_maximum; k++) {
+      values[k] = pgm_read_word(&(MAX9744Gain_milliBels[k]));
+    }
+  }
 }
 
 // enable the MAX9744 by taking it out of shutdown (HIGH)
