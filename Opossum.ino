@@ -191,21 +191,25 @@ void waitForConnection(void) {
 }
 
 
-// calculate allowable MAX9744 volume adjustment range
-void updateVolumeRange(void) {
+// calculate valid amplifier volume adjustment range (assumes range of 0-63)
+void updateVolumeRange64(void) {
   uint8_t CurrentVolumeLevel = lowByte(volOut >> 4);
+  // if the volume control value is zero set min/max to zero to mute output
   if (CurrentVolumeLevel == (uint8_t)0) {
     volumeRange[0] = 0;
     volumeRange[1] = 0;
   }
+  // if the volume control value is less than 7, set lower-bound to 0
   else if (CurrentVolumeLevel < (uint8_t)7) {
     volumeRange[0] = 0;
     volumeRange[1] = CurrentVolumeLevel + 6;
   }
+  // if the volume control value is less than 7, set lower-bound to 0
   else if (CurrentVolumeLevel > (uint8_t)57) {
     volumeRange[0] = CurrentVolumeLevel - 6;
     volumeRange[1] = 63;
   }
+  // otherwise set lower bound to (volume - 6), upper bound to (volume + 6)
   else {
     volumeRange[0] = CurrentVolumeLevel - 6;
     volumeRange[1] = CurrentVolumeLevel + 6;
