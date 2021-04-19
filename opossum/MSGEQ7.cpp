@@ -45,46 +45,59 @@ void MSGEQ7::init(void) {
   }
 }
 
-// read back spectral band data from the MSGEQ7
-void MSGEQ7::read(uint16_t *levelRead) {
-  // start by setting RESET pin low to enable output
-  digitalWrite(reset_p, LOW);
-  delayMicroseconds(100);
-
-  // pulse STROBE pin to read all 7 frequency bands
-  for(uint8_t k = 0; k < 7; k++) {
-    // set STROBE pin low to enable output
-    digitalWrite(strobe_p, LOW);
-    delayMicroseconds(65);
-
-    // read signal band level, account for later loudness adj.
-    levelRead[k] = analogRead(dc_out) << 3;
-
-    // set STROBE pin high again to prepare for next band reading
-    digitalWrite(strobe_p, HIGH);
-    delayMicroseconds(35);
+// find mean of the `array_values` data read from MSGEQ7
+uint16_t MSGEQ7::mean(uint16_t *read_array, size_t array_size) {
+  uint16_t sum = 0;
+  if ((uint16_t)array_size != (uint16_t)7) {
+    // there are 7 spectral bands so the array size must be 7 elements
+    // if this is no the case then don't do anything and return zero
+    return sum;
   }
-
-  // set RESET high again to reset MSGEQ7 multiplexer
-  digitalWrite(reset_p, HIGH);
-
-  // spectral band adj. (very) loosely based on ISO 226:2003 [60 phons]
-  levelRead[0] = levelRead[0] >> 3;   //   63 Hz
-  levelRead[1] = levelRead[1] >> 1;   //  160 Hz
-  levelRead[2] = levelRead[2] >> 0;   //  400 Hz
-  levelRead[3] = levelRead[3] << 0;   // 1000 Hz
-  levelRead[4] = levelRead[4] << 0;   // 2500 Hz
-  levelRead[5] = levelRead[5] >> 1;   // 6250 Hz
-  levelRead[6] = levelRead[6] >> 2;   //16000 Hz
+  else {
+    // calculate the sum of levelRead array
+    for(uint8_t k = 0; k < 7; k++) {
+      sum = sum + read_array[k];
+    }
+    // much faster than divide-by-7, accurate to 7.00
+    return (sum * 585L) >> 12;
+  }
 }
 
-// find mean of levelRead array data read from MSGEQ7
-uint16_t MSGEQ7::mean(uint16_t *levelRead) {
-  // calculate the sum of levelRead array
-  uint16_t sum = 0;
-  for(uint8_t k = 0; k < 7; k++) {
-    sum = sum + levelRead[k];
+// read spectral band data from the MSGEQ7 and write to `read_array`
+void MSGEQ7::read(uint16_t *read_array, size_t array_size) {
+  // there are 7 spectral bands so the array size must be 7 elements
+  if ((uint16_t)array_size != (uint16_t)7) {
+    return;
   }
-  // much faster than divide-by-7, accurate to 7.00
-  return (sum * 585L) >> 12;
+  else {
+    // start by setting RESET pin low to enable output
+    digitalWrite(reset_p, LOW);
+    delayMicroseconds(100);
+
+    // pulse STROBE pin to read all 7 frequency bands
+    for(uint8_t k = 0; k < 7; k++) {
+      // set STROBE pin low to enable output
+      digitalWrite(strobe_p, LOW);
+      delayMicroseconds(65);
+
+      // read signal band level, account for later loudness adj.
+      read_array[k] = analogRead(dc_out) << 3;
+
+      // set STROBE pin high again to prepare for next band reading
+      digitalWrite(strobe_p, HIGH);
+      delayMicroseconds(35);
+    }
+
+    // set RESET high again to reset MSGEQ7 multiplexer
+    digitalWrite(reset_p, HIGH);
+
+    // spectral band adj. (very) loosely based on ISO 226:2003 [60 phons]
+    read_array[0] = read_array[0] >> 3;   //   63 Hz
+    read_array[1] = read_array[1] >> 1;   //  160 Hz
+    read_array[2] = read_array[2] >> 0;   //  400 Hz
+    read_array[3] = read_array[3] << 0;   // 1000 Hz
+    read_array[4] = read_array[4] << 0;   // 2500 Hz
+    read_array[5] = read_array[5] >> 1;   // 6250 Hz
+    read_array[6] = read_array[6] >> 2;   //16000 Hz
+  }
 }
