@@ -217,6 +217,9 @@ void updateVolumeRange64(void) {
 }
 
 
+
+
+
 // set up and configure the MCU, BM62, and MSGEQ7
 void setup() {
   // initialize the BM62 bluetooth device
@@ -245,7 +248,7 @@ void setup() {
   vol = analogRead(VOLUME);             // read Volume Control
   amplifier.volume(lowByte(vol >> 4));
   volOut = vol;
-  updateVolumeRange();
+  updateVolumeRange64();
   amplifier.unmute();
   
   // initialize levelBuf to nominal 'zero-signal' value
@@ -254,8 +257,10 @@ void setup() {
   }
   
   // read weighted audio level data, find mean, calculate buffer value
-  spectrum.read(levelRead);
-  levelOut = Audiomath::decayBuffer32(levelBuf, spectrum.mean(levelRead),
+  spectrum.read(levelRead, MSGEQ7_SIGNAL_BAND_COUNT);
+  levelOut = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
+                                      spectrum.mean(levelRead, 
+                                      MSGEQ7_SIGNAL_BAND_COUNT),
                                       MSGEQ7_ZERO_SIGNAL_LEVEL);
 
   // initialize base volume level and relative dB values
@@ -283,8 +288,10 @@ void loop() {
     previousMillis = currentMillis;
 
     // read weighted audio level data, find mean, calculate buffer value
-    spectrum.read(levelRead);
-    levelOut = Audiomath::decayBuffer32(levelBuf, spectrum.mean(levelRead),
+    spectrum.read(levelRead, MSGEQ7_SIGNAL_BAND_COUNT);
+    levelOut = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
+                                        spectrum.mean(levelRead, 
+                                        MSGEQ7_SIGNAL_BAND_COUNT),
                                         MSGEQ7_ZERO_SIGNAL_LEVEL);
 
     if (S2_button_read_ACTIVE) {
@@ -342,14 +349,14 @@ void loop() {
     #endif
   }
  
-  vol = analogRead(VOLUME); // read Channel A0
+  vol = analogRead(VOLUME); // read Channel A0 to get volume control position
   
   // ignore three LSB to filter noise and prevent output level oscillations
   if (abs(volOut - vol) > 8) {
     amplifier.volume(lowByte(
       volOut >> 4));
     volOut = vol;
-    updateVolumeRange();
+    updateVolumeRange64();
     Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
 
     #if defined DEBUG

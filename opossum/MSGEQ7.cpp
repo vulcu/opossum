@@ -50,7 +50,7 @@ uint16_t MSGEQ7::mean(uint16_t *read_array, size_t array_size) {
   uint16_t sum = 0;
   if ((uint16_t)array_size != (uint16_t)7) {
     // there are 7 spectral bands so the array size must be 7 elements
-    // if this is no the case then don't do anything and return zero
+    // if this is not the case then don't do anything and return zero
     return sum;
   }
   else {

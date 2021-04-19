@@ -21,7 +21,7 @@ A bluetooth-connected amplifier utilizing a microcontroller continuously analyzi
 At present, the system will automatically connect to a device via bluetooth, play audio from that device, reestablish a lost connection, control the amplifier volume, read and process audio levels from the MSGEQ7, determine relative dB levels for audio data and automatically recalculate those levels when the volume is manually adjusted. Other than the fact it's not completely plumbed together yet, a lot of the code is in there and working reliably.
 
 #### Remaining Work ####
-* move some remaining functions out of main file and into related classes
+* ~~move some remaining functions out of main file and into related classes~~ _complete_
   * ~~volume range update~~ _won't do, makes sense to leave where it is_
   * ~~circular level tracking buffer~~ _done_
 * the button interrupts are working and accurately debounce and count _**N**_ switch transitions within period _**T**_, now that count needs to be used to:
