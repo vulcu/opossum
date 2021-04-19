@@ -21,9 +21,9 @@
 
   class Audiomath {
     public:
-      static void dBFastRelativeLevel(uint16_t *dBLevels, uint16_t baseLevel);
-      static uint16_t decayBuffer32(uint16_t *levelBuf, uint16_t levelReadMean, 
-                                    const uint16_t nominal_signal_level);
+      static void     dBFastRelativeLevel(uint16_t *dBLevels, uint16_t baseLevel);
+      static uint16_t decayBuffer32(uint16_t *data_buffer, size_t buffer_size, 
+                                    uint16_t data_mean, const uint16_t nominal_zero_signal_level);
   };
 
 #endif

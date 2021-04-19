@@ -20,7 +20,8 @@
 
 #include "audiomath.h"
 
-static uint8_t bufferIndx = 0;
+// index for keeping track of the buffer used by decayBuffer32
+static uint8_t buffer_indx_32 = 0;
 
 // Coefficient table for fast dB approximations
 static const uint16_t dBCoefTable[25] PROGMEM =
@@ -39,33 +40,40 @@ void Audiomath::dBFastRelativeLevel(uint16_t *dBLevels, uint16_t baseLevel) {
   }
 }
 
-// use a 32-value circular buffer to track audio levels
-uint16_t Audiomath::decayBuffer32(uint16_t *levelBuf, uint16_t levelReadMean, 
-                                  const uint16_t nominal_signal_level) {
-  if (bufferIndx >= 32) {
-    bufferIndx = 0;
-  }
-  if (levelReadMean > levelBuf[bufferIndx]) {
-    // if the new value is greater, use value halfway between old and new
-    levelBuf[bufferIndx] = levelBuf[bufferIndx] +
-      ((levelReadMean - levelBuf[bufferIndx]) >> 1);
-  }
-  else if (levelReadMean < ((nominal_signal_level * (uint16_t)18) >> 4)) {
-    // if the latest level is less a small % over the nominal zero signal,
-    // there's probs no significant audio signal so don't update buffer
-  }
-  else {
-    // otherwise, decay the current value by approximately 3%
-    levelBuf[bufferIndx] = (levelBuf[bufferIndx] * 31L) >> 5;
-  }
-  bufferIndx++;
+// use a 32-value circular buffer to track audio levels, MUST be 32 elements
+uint16_t Audiomath::decayBuffer32(uint16_t *data_buffer, size_t buffer_size, 
+                                  uint16_t data_mean, const uint16_t nominal_zero_signal_level) {
+    if ((uint16_t)buffer_size != (uint16_t)32) {
+      // this method will only return accurate values for arrays with 32 elements
+      // if this is not the case then don't do anything and return zero
+      return (uint16_t)0;
+    }
+    else {
+      if (buffer_indx_32 >= 32) {
+        buffer_indx_32 = 0;
+      }
+      if (data_mean > data_buffer[buffer_indx_32]) {
+        // if the new value is greater, use value halfway between old and new
+        data_buffer[buffer_indx_32] = data_buffer[buffer_indx_32] +
+          ((data_mean - data_buffer[buffer_indx_32]) >> 1);
+      }
+      else if (data_mean < ((nominal_zero_signal_level * (uint16_t)18) >> 4)) {
+        // if the latest level is less a small % over the nominal zero signal,
+        // there's probs no significant audio signal so don't update buffer
+      }
+      else {
+        // otherwise, decay the current value by approximately 3%
+        data_buffer[buffer_indx_32] = (data_buffer[buffer_indx_32] * 31L) >> 5;
+      }
+      buffer_indx_32++;
 
-  // calculate total sum of exponential buffer array
-  uint32_t sum = 0;
-  for (uint16_t k = 0; k < 32; k++) {
-    sum = sum + levelBuf[k];
-  }
+      // calculate total sum of exponential buffer array
+      uint32_t sum = 0;
+      for (uint16_t k = 0; k < 32; k++) {
+        sum = sum + data_buffer[k];
+      }
 
-  // divide the sum by 32 and return the array mean
-  return sum >> 5; 
+      // divide the sum by 32 and return the array mean
+      return (uint16_t)(sum >> 5);
+    }
 }
