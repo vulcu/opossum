@@ -60,8 +60,8 @@
       HardwareSerial* hserial;
 
       uint8_t checksum(uint8_t command[], uint8_t command_length);
-      void isProgramMode(void);
-      void writeSerialCommand(const uint8_t *instruction, const uint16_t bytes_command);
+      void    isProgramMode(void);
+      void    writeSerialCommand(const uint8_t *instruction, const uint16_t bytes_command);
 
   };
 

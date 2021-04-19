@@ -80,7 +80,7 @@ void BM62::enable(void) {
 // put the BM62 back into pairing mode to permit pairing to new device
 void BM62::enterPairingMode(void) {
   if (isConnected()) {
-    writeSerialCommand(BM62_EnterPairingMode, (uint16_t)sizeof(BM62_EnterPairingMode));
+    writeSerialCommand(BM62_EnterPairingMode, sizeof(BM62_EnterPairingMode));
   }
 }
 
@@ -137,7 +137,7 @@ void BM62::setEqualizerPreset(EQ_Preset_t preset) {
     } break;
   }
   if (isConnected()) {
-    writeSerialCommand(BM62_EQ_Preset, (uint16_t)sizeof(BM62_EQ_Preset));
+    writeSerialCommand(BM62_EQ_Preset, sizeof(BM62_EQ_Preset));
   }
 }
 
@@ -175,42 +175,42 @@ void BM62::reset(void) {
 // start playback from bluetooth-connected media device
 void BM62::play(void) {
   if (isConnected()) {
-    writeSerialCommand(BM62_Play, (uint16_t)sizeof(BM62_Play));
+    writeSerialCommand(BM62_Play, sizeof(BM62_Play));
   }
 }
 
 // pause playback from bluetooth-connected media device
 void BM62::pause(void) {
   if (isConnected()) {
-    writeSerialCommand(BM62_Pause, (uint16_t)sizeof(BM62_Pause));
+    writeSerialCommand(BM62_Pause, sizeof(BM62_Pause));
   }
 }
 
 // media playback play/pause toggle (pauses if playing, plays if paused)
 void BM62::playPauseToggle(void) {
   if (isConnected()) {
-    writeSerialCommand(BM62_Play_Toggle, (uint16_t)sizeof(BM62_Play_Toggle));
+    writeSerialCommand(BM62_Play_Toggle, sizeof(BM62_Play_Toggle));
   }
 }
 
 // stop playback from bluetooth-connected media device
 void BM62::stop(void) {
   if (isConnected()) {
-    writeSerialCommand(BM62_Stop, (uint16_t)sizeof(BM62_Stop));
+    writeSerialCommand(BM62_Stop, sizeof(BM62_Stop));
   }
 }
 
 // go to previous track on bluetooth-connected media device
 void BM62::previous(void) {
   if (isConnected()) {
-    writeSerialCommand(BM62_Prev_Track, (uint16_t)sizeof(BM62_Prev_Track));
+    writeSerialCommand(BM62_Prev_Track, sizeof(BM62_Prev_Track));
   }
 }
 
 // go to next track on bluetooth-connected media device
 void BM62::next(void) {
   if (isConnected()) {
-    writeSerialCommand(BM62_Next_Track, (uint16_t)sizeof(BM62_Next_Track));
+    writeSerialCommand(BM62_Next_Track, sizeof(BM62_Next_Track));
   }
 }
 
@@ -241,7 +241,7 @@ void BM62::isProgramMode(void) {
 }
 
 // build the BM62 UART command array w/ checksum and write over serial UART
-void BM62::writeSerialCommand(const uint8_t *instruction, uint16_t bytes_command) {
+void BM62::writeSerialCommand(const uint8_t *instruction, size_t bytes_command) {
   // allocation size in bytes of the serial syncword
   uint8_t bytes_syncword = sizeof(serial_uart_sync_header);
 
