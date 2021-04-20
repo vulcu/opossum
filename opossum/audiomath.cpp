@@ -25,7 +25,7 @@ static uint8_t buffer_indx_32 = 0;
 
 // Coefficient table for fast dB approximations
 static const uint16_t dBCoefTable[25] PROGMEM =
-{ 
+{
   2053, 2175, 2303, 2440, 2584,
   2738, 2900, 3072, 3254, 3446,
   3651, 3867, 4096, 4339, 4596,
@@ -41,7 +41,7 @@ void Audiomath::dBFastRelativeLevel(uint16_t *dBLevels, uint16_t baseLevel) {
 }
 
 // use a 32-value circular buffer to track audio levels, MUST be 32 elements
-uint16_t Audiomath::decayBuffer32(uint16_t *data_buffer, size_t buffer_size, 
+uint16_t Audiomath::decayBuffer32(uint16_t *data_buffer, size_t buffer_size,
                                   uint16_t data_mean, const uint16_t nominal_zero_signal_level) {
     if ((uint16_t)buffer_size != (uint16_t)32) {
       // this method will only return accurate values for arrays with 32 elements

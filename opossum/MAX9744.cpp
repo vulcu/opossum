@@ -22,22 +22,22 @@
 // (1/100 of a dB) to allow PROGMEM storage as an int type
 static const int16_t MAX9744Gain_milliBels[64] PROGMEM = 
 {
-    950,    880,    820,    760,
-    700,    650,    590,    540,
-    490,    440,    390,    340,
-    290,    240,    200,    160,
-    120,     50,    -50,   -190,
-   -340,   -500,   -600,   -710,
-   -890,   -990,  -1090,  -1200,
-  -1310,  -1440,  -1540,  -1640,
-  -1750,  -1970,  -2160,  -2350,
-  -2520,  -2720,  -2980,  -3150,
-  -3340,  -3600,  -3760,  -3960,
-  -4210,  -4370,  -4560,  -4810,
-  -5060,  -5420,  -5670,  -6020,
-  -6270,  -6620,  -6870,  -7220,
-  -7470,  -7830,  -8080,  -8430,
-  -8680,  -9030,  -9290,  -10950
+  -10950,  -9290,   -9030,   -8680,
+  -8430,   -8080,   -7830,   -7470,
+  -7220,   -6870,   -6620,   -6270,
+  -6020,   -5670,   -5420,   -5060,
+  -4810,   -4560,   -4370,   -4210,
+  -3960,   -3760,   -3600,   -3340,
+  -3150,   -2980,   -2720,   -2520,
+  -2350,   -2160,   -1970,   -1750,
+  -1640,   -1540,   -1440,   -1310,
+  -1200,   -1090,   -990,    -890,
+  -710,    -600,    -500,    -340,
+  -190,    -50,      50,      120,
+   160,     200,     240,     290,
+   340,     390,     440,     490,
+   540,     590,     650,     700,
+   760,     820,     880,     950
 };
 
 // class constructor for MAX9744 amplifier object
@@ -67,10 +67,41 @@ void MAX9744::convertVolumeToGain(uint8_t start, uint8_t stop, int16_t *values, 
     return;   // the `values[]` array is not large enough to contain the requested range
   }
   else {
-    for (uint8_t k = index_minimum; k <= index_maximum; k++) {
-      values[k] = pgm_read_word(&(MAX9744Gain_milliBels[k]));
+    for (uint8_t k = 0; k <= size; k++) {
+      values[k] = pgm_read_word(&(MAX9744Gain_milliBels[k + index_minimum]));
     }
   }
+
+  /* #ifndef AUDIOMATH_MODULE_PARAMETERS
+  #define AUDIOMATH_MODULE_PARAMETERS
+    #define MILLIBEL_BOUND_LOWER (int16_t) -600
+    #define MILLIBEL_BOUND_UPPER (int16_t)  600
+  #endif */
+
+  // MATLAB code for determining which real amp gain values fall within +/- 800 mB
+    /* if (volume == 1)
+      a = 1;
+    else
+      for k = volume-1:-1:1
+        if (((gain_mB(volume) - gain_mB(k)) >=  range_mB) || (k <= 1));
+          a = k;
+          break;
+        end
+      end
+    end
+    if (volume == numel(gain_mB))
+      b = numel(gain_mB);
+    else
+      for k = volume+1:numel(gain_mB);
+        if (((gain_mB(k) - gain_mB(volume)) >=  range_mB) || (k >= 64));
+          b = k;
+          break;
+        end
+      end
+    end
+    sizeof = b-a+1;
+    c = zeros(sizeof, 1);
+    c = gain_mB(a:b); */
 }
 
 // enable the MAX9744 by taking it out of shutdown (HIGH)

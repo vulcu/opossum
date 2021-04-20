@@ -217,9 +217,6 @@ void updateVolumeRange64(void) {
 }
 
 
-
-
-
 // set up and configure the MCU, BM62, and MSGEQ7
 void setup() {
   // initialize the BM62 bluetooth device
@@ -366,6 +363,14 @@ void loop() {
       Serial.print(" ");
       for(uint8_t k = 0; k < 2; k++) {
         Serial.print(volumeRange[k]);
+        Serial.print(" ");
+      }
+      size_t values_size = volumeRange[1] - volumeRange[0] + 1;
+      int16_t values [values_size] ={0};
+      amplifier.convertVolumeToGain(volumeRange[0], volumeRange[1], 
+                                    values, values_size);
+      for(uint16_t k = 0; k < values_size; k++) {
+        Serial.print(values[k]);
         Serial.print(" ");
       }
       for(uint8_t k = 0; k < 25; k++) {
