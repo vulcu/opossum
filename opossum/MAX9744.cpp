@@ -77,31 +77,6 @@ void MAX9744::convertVolumeToGain(uint8_t start, uint8_t stop, int16_t *values, 
     #define MILLIBEL_BOUND_LOWER (int16_t) -600
     #define MILLIBEL_BOUND_UPPER (int16_t)  600
   #endif */
-
-  // MATLAB code for determining which real amp gain values fall within +/- 800 mB
-    /* if (volume == 1)
-      a = 1;
-    else
-      for k = volume-1:-1:1
-        if (((gain_mB(volume) - gain_mB(k)) >=  range_mB) || (k <= 1));
-          a = k;
-          break;
-        end
-      end
-    end
-    if (volume == numel(gain_mB))
-      b = numel(gain_mB);
-    else
-      for k = volume+1:numel(gain_mB);
-        if (((gain_mB(k) - gain_mB(volume)) >=  range_mB) || (k >= 64));
-          b = k;
-          break;
-        end
-      end
-    end
-    sizeof = b-a+1;
-    c = zeros(sizeof, 1);
-    c = gain_mB(a:b); */
 }
 
 // enable the MAX9744 by taking it out of shutdown (HIGH)

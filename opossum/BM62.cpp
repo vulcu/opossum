@@ -84,6 +84,37 @@ void BM62::enterPairingMode(void) {
   }
 }
 
+// initialize the BM62 module and GPIO
+void BM62::init(void) {
+  // initialize the BM62 reset line and ensure reset is asserted
+  pinMode(reset_n, OUTPUT);
+  reset();
+
+  // wait predefined number of ms, then take the BM62 out of reset
+  delay(INIT_RESET_CYCLE_WAIT_TIME_MS);
+  enable();
+  
+  // initialize the BM62 programming sense line
+  pinMode(prgm_sense_n, INPUT);
+
+  // determine if the BM62 is being programmed; if so, take a nap
+  isProgramMode();
+
+  // input for determining if a successful A2DP connection active
+  pinMode(ind_a2dp_n, INPUT_PULLUP);
+}
+
+// query state of BM62 IND_A2DP_N pin and return FALSE if no 
+// active A2DP connection is available (indicated by a HIGH state)
+bool BM62::isConnected(void) {
+  return (bool)!digitalRead(ind_a2dp_n);
+}
+
+// set BM62 reset status, active-low signal so LOW puts device in reset
+void BM62::reset(void) {
+  digitalWrite(reset_n, LOW);
+}
+
 // set audio equalizer mode setting to specified preset mode
 void BM62::setEqualizerPreset(EQ_Preset_t preset) {
   uint8_t BM62_EQ_Preset[TARGET_LENGTH_EQ_PRESET];
@@ -141,37 +172,6 @@ void BM62::setEqualizerPreset(EQ_Preset_t preset) {
   }
 }
 
-// initialize the BM62 module and GPIO
-void BM62::init(void) {
-  // initialize the BM62 reset line and ensure reset is asserted
-  pinMode(reset_n, OUTPUT);
-  reset();
-
-  // wait predefined number of ms, then take the BM62 out of reset
-  delay(INIT_RESET_CYCLE_WAIT_TIME_MS);
-  enable();
-  
-  // initialize the BM62 programming sense line
-  pinMode(prgm_sense_n, INPUT);
-
-  // determine if the BM62 is being programmed; if so, take a nap
-  isProgramMode();
-
-  // input for determining if a successful A2DP connection active
-  pinMode(ind_a2dp_n, INPUT_PULLUP);
-}
-
-// query state of BM62 IND_A2DP_N pin and return FALSE if no 
-// active A2DP connection is available (indicated by a HIGH state)
-bool BM62::isConnected(void) {
-  return (bool)!digitalRead(ind_a2dp_n);
-}
-
-// set BM62 reset status, active-low signal so LOW puts device in reset
-void BM62::reset(void) {
-  digitalWrite(reset_n, LOW);
-}
-
 // start playback from bluetooth-connected media device
 void BM62::play(void) {
   if (isConnected()) {
@@ -218,7 +218,7 @@ void BM62::next(void) {
 uint8_t BM62::checksum(uint8_t command[], uint8_t command_length) {
   // BM62 documentation is lacking but pretty sure this is right
   uint16_t chksum = 0;
-  for (uint8_t k = 2; k < command_length - 1; k++) {
+  for (uint8_t k = 2; k < command_length; k++) {
     chksum = chksum + command[k];
   }
 
@@ -266,7 +266,7 @@ void BM62::writeSerialCommand(const uint8_t *instruction, size_t bytes_command) 
   indx += bytes_command;
 
   // calculate the checksum and write this value to the last element of the command buffer
-  command[indx] = checksum(command, indx + 1);
+  command[indx] = checksum(command, indx);
 
   // write the command buffer to the serial output
   hserial->write(command, sizeof(command));
