@@ -59,26 +59,6 @@ void MAX9744::init(void) {
   enable();
 }
 
-// return the dB gain values correllating amplifier volume settings
-void MAX9744::convertVolumeToGain(uint8_t start, uint8_t stop, int16_t *values, size_t size) {
-  uint8_t index_minimum = ((start <= stop) ? start : stop);
-  uint8_t index_maximum = ((start  > stop) ? start : stop);
-  if ((index_maximum - index_minimum) > size) {
-    return;   // the `values[]` array is not large enough to contain the requested range
-  }
-  else {
-    for (uint8_t k = 0; k <= size; k++) {
-      values[k] = pgm_read_word(&(MAX9744Gain_milliBels[k + index_minimum]));
-    }
-  }
-
-  /* #ifndef AUDIOMATH_MODULE_PARAMETERS
-  #define AUDIOMATH_MODULE_PARAMETERS
-    #define MILLIBEL_BOUND_LOWER (int16_t) -600
-    #define MILLIBEL_BOUND_UPPER (int16_t)  600
-  #endif */
-}
-
 // enable the MAX9744 by taking it out of shutdown (HIGH)
 void MAX9744::enable(void) {
   digitalWrite(shutdown_n, HIGH);
@@ -126,3 +106,7 @@ void MAX9744::volume(uint8_t value) {
   }
 }
 
+// return the dB gain values correllating amplifier volume settings
+inline int16_t MAX9744::getGainAtVolumeIndex(uint8_t index) {
+  return pgm_read_word(&(MAX9744Gain_milliBels[index]));
+}

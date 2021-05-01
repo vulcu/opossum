@@ -21,6 +21,8 @@
 
   class Audiomath {
     public:
+      static void     convertVolumeToGain(uint8_t start, uint8_t stop, 
+                                          int16_t *values, size_t size);
       static void     dBFastRelativeLevel(uint16_t *dBLevels, uint16_t baseLevel);
       static uint16_t decayBuffer32(uint16_t *data_buffer, size_t buffer_size, 
                                     uint16_t data_mean, const uint16_t nominal_zero_signal_level);

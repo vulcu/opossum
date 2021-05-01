@@ -37,6 +37,21 @@ static const uint16_t dBCoefTable[25] PROGMEM =
 void Audiomath::dBFastRelativeLevel(uint16_t *dBLevels, uint16_t baseLevel) {
   for(uint8_t k = 0; k < 25; k++) {
     dBLevels[k] = ((uint32_t)baseLevel * pgm_read_word(&(dBCoefTable[k]))) >> 12;
+
+// return the dB gain values correllating amplifier volume settings
+void Audiomath::convertVolumeToGain(uint8_t start, uint8_t stop, 
+                                    int16_t *values, size_t size) {
+  uint8_t index_minimum = ((start <= stop) ? start : stop);
+  uint8_t index_maximum = ((start  > stop) ? start : stop);
+  if ((index_maximum - index_minimum) > size) {
+    return;   // the `values[]` array is not large enough to contain the requested range
+  }
+  else {
+    for (uint8_t k = 0; k <= size; k++) {
+      values[k] = MAX9744::getGainAtVolumeIndex(k);
+    }
+  }
+}
   }
 }
 

@@ -35,12 +35,13 @@
 
       void init(void);
       void enable(void);
-      void convertVolumeToGain(uint8_t start, uint8_t stop, int16_t *values, size_t size);
       void invertMuteLogic(bool invert_mute);
       void mute(void);
       void shutdown(void);
       void unmute(void);
       void volume(uint8_t value);
+
+      static inline int16_t getGainAtVolumeIndex(uint8_t index);
   };
 
 #endif
