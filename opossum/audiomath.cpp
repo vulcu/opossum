@@ -24,7 +24,7 @@
 static uint8_t buffer_indx_32 = 0;
 
 // Coefficient table for fast dB approximations
-static const uint16_t dBCoefTable[25] PROGMEM =
+static const uint16_t dB_fast_coefficient[25] PROGMEM =
 {
   2053, 2175, 2303, 2440, 2584,
   2738, 2900, 3072, 3254, 3446,
@@ -36,7 +36,9 @@ static const uint16_t dBCoefTable[25] PROGMEM =
 // update the relative dB level bands using currently defined volume level
 void Audiomath::dBFastRelativeLevel(uint16_t *dBLevels, uint16_t baseLevel) {
   for(uint8_t k = 0; k < 25; k++) {
-    dBLevels[k] = ((uint32_t)baseLevel * pgm_read_word(&(dBCoefTable[k]))) >> 12;
+    dBLevels[k] = ((uint32_t)baseLevel * pgm_read_word(&(dB_fast_coefficient[k]))) >> 12;
+  }
+}
 
 // return the dB gain values correllating amplifier volume settings
 void Audiomath::convertVolumeToGain(uint8_t start, uint8_t stop, 
