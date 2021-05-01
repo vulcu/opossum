@@ -19,6 +19,18 @@
 #include <avr/pgmspace.h>
 
 #include "audiomath.h"
+#include "MAX9744.h"
+
+#ifndef AUDIOMATH_MODULE_PARAMETERS
+#define AUDIOMATH_MODULE_PARAMETERS
+
+  // AGC range bounds and analysis step size (in 1/100ths of a dB)
+  // these values must be hardcoded to match `coeffecients_dB`
+  #define MILLIBEL_BOUND_LOWER (int16_t) -600
+  #define MILLIBEL_BOUND_UPPER (int16_t)  600
+  #define MILLIBEL_STEP_SIZE   (int16_t)  50
+
+#endif
 
 // index for keeping track of the buffer used by decayBuffer32
 static uint8_t buffer_indx_32 = 0;
@@ -54,6 +66,58 @@ void Audiomath::convertVolumeToGain(uint8_t start, uint8_t stop,
     }
   }
 }
+
+// return the dB gain values correllating amplifier volume settings
+void Audiomath::mapVolumeToBoundedRange(uint8_t volume, uint8_t *volumeMap, 
+                                        int16_t lower_bound, int16_t upper_bound,
+                                        int16_t step_size, uint8_t max_volume_value) {
+  if (lower_bound == upper_bound) {
+    volumeMap[0] = volume;
+    return;   // if the range is zero, the volume map can only be one number
+  }
+
+  uint8_t a;
+  uint8_t b;
+  uint8_t index_minimum = ((lower_bound <= upper_bound) ? lower_bound : upper_bound);
+  uint8_t index_maximum = ((lower_bound  > upper_bound) ? lower_bound : upper_bound);
+  size_t map_size = (upper_bound - lower_bound) / step_size + 1;
+  uint16_t offset_mB[map_size] = {0};
+  uint8_t GmB_volume = MAX9744::getGainAtVolumeIndex(volume);
+
+  for (uint8_t k = 0; k < map_size; k++) {
+    offset_mB[k] = k * step_size;
+  }
+
+  if (volume == 1) {
+    a = 0;
+  }
+  else {
+    for(uint8_t k = volume - 1; k >= 0; k--) {
+      if ((GmB_volume - MAX9744::getGainAtVolumeIndex(k)) > lower_bound) {
+        a = k + 1;
+        break;
+      }
+      else if (k == 0) {
+        a = 0;
+        break;
+      }
+    }
+  }
+
+  if (volume == max_volume_value) {
+    b = max_volume_value;
+  }
+  else {
+    for(uint8_t k = volume + 1; k <= max_volume_value; k++) {
+      if ((MAX9744::getGainAtVolumeIndex(k) - GmB_volume) > upper_bound) {
+        b = k - 1;
+        break;
+      }
+      else if (k >= max_volume_value) {
+        b = max_volume_value;
+        break;
+      }
+    }
   }
 }
 

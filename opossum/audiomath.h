@@ -26,6 +26,9 @@
       static void     dBFastRelativeLevel(uint16_t *dBLevels, uint16_t baseLevel);
       static uint16_t decayBuffer32(uint16_t *data_buffer, size_t buffer_size, 
                                     uint16_t data_mean, const uint16_t nominal_zero_signal_level);
+      static void     mapVolumeToBoundedRange(uint8_t volume, uint8_t *volumeMap, 
+                                              int16_t lower_bound, int16_t upper_bound,
+                                              int16_t step_size, uint8_t max_volume_value);
   };
 
 #endif
