@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef __OPOSSUM_AUDIO_MATH_H__
-#define __OPOSSUM_AUDIO_MATH_H__
+#ifndef OPOSSUM_AUDIOMATH_H
+#define OPOSSUM_AUDIOMATH_H
 
   class Audiomath {
     public:

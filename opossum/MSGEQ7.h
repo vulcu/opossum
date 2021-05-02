@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef __MSGEQ7_H__
-#define __MSGEQ7_H__
+#ifndef MSGEQ7_H
+#define MSGEQ7_H
 
   class MSGEQ7 {
     private:

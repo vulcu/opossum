@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef __LED_BUTTON_H__
-#define __LED_BUTTON_H__
+#ifndef LED_BUTTON_H
+#define LED_BUTTON_H
 
   class LED {
     private:

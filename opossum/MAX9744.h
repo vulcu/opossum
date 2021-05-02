@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef __MAX9744_H__
-#define __MAX9744_H__
+#ifndef MAX9744_H
+#define MAX9744_H
 
   #include <avr/pgmspace.h>
   #include <Wire.h>

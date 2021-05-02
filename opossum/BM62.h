@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef __BM62_H__
-#define __BM62_H__
+#ifndef BM62_H
+#define BM62_H
 
   class BM62 {
     public:
