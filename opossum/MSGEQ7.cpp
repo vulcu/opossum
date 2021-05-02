@@ -32,7 +32,7 @@ void MSGEQ7::init(void) {
   pinMode(reset_p,  OUTPUT);
 
   // set MSGEQ7 strobe low, and reset high (put device in standby)
-  digitalWrite(strobe_p, LOW);
+  digitalWrite(strobe_p, HIGH);
   digitalWrite(reset_p, HIGH);
 
   if (isInputPullup) {
