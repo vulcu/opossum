@@ -254,10 +254,9 @@ void setup() {
   }
   
   // read weighted audio level data, find mean, calculate buffer value
-  spectrum.read(levelRead, MSGEQ7_SIGNAL_BAND_COUNT);
+  spectrum.read(levelRead, sizeof(levelRead));
   levelOut = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
-                                      spectrum.mean(levelRead, 
-                                      MSGEQ7_SIGNAL_BAND_COUNT),
+                                      spectrum.mean(levelRead, sizeof(levelRead)), 
                                       MSGEQ7_ZERO_SIGNAL_LEVEL);
 
   // initialize base volume level and relative dB values
@@ -285,10 +284,9 @@ void loop() {
     previousMillis = currentMillis;
 
     // read weighted audio level data, find mean, calculate buffer value
-    spectrum.read(levelRead, MSGEQ7_SIGNAL_BAND_COUNT);
+    spectrum.read(levelRead, sizeof(levelRead));
     levelOut = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
-                                        spectrum.mean(levelRead, 
-                                        MSGEQ7_SIGNAL_BAND_COUNT),
+                                        spectrum.mean(levelRead, sizeof(levelRead)),
                                         MSGEQ7_ZERO_SIGNAL_LEVEL);
 
     if (S2_button_read_ACTIVE) {
