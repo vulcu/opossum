@@ -37,8 +37,7 @@
         EQ_Custom
       };
 
-      BM62(uint8_t prgm_sense_n, uint8_t reset_n, uint8_t ind_a2dp_n, 
-          HardwareSerial* hserial);
+      BM62(uint8_t prgm_sense_n, uint8_t reset_n, uint8_t ind_a2dp_n, Stream* hserial);
 
       void enable(void);
       void enterPairingMode(void);
@@ -57,7 +56,7 @@
       uint8_t prgm_sense_n;
       uint8_t reset_n;
       uint8_t ind_a2dp_n;
-      HardwareSerial* hserial;
+      Stream* hserial;
 
       uint8_t checksum(const uint8_t command[], const uint8_t command_length);
       void    isProgramMode(void);
