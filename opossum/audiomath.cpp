@@ -58,46 +58,36 @@ void Audiomath::dBFastRelativeLevel(uint16_t *dBLevels, uint16_t baseLevel) {
 
 // return the dB gain values correllating amplifier volume settings
 void Audiomath::convertVolumeToGain(uint8_t start, uint8_t stop, 
-                                    int16_t *values, size_t size) {
+                                    int16_t *values, uint8_t values_size) {
   uint8_t index_minimum = ((start <= stop) ? start : stop);
   uint8_t index_maximum = ((start  > stop) ? start : stop);
-  if ((index_maximum - index_minimum) > size) {
+  if ((index_maximum - index_minimum) > values_size) {
     return;   // the `values[]` array is not large enough to contain the requested range
   }
   else {
-    for (uint8_t k = 0; k <= size; k++) {
-      values[k] = MAX9744::getGainAtVolumeIndex(k);
+    for (uint8_t k = 0; k <= values_size; k++) {
+      values[k] = MAX9744::getGainAtVolumeIndex(index_minimum + k);
     }
   }
 }
 
 // return the dB gain values correllating amplifier volume settings
 void Audiomath::mapVolumeToBoundedRange(uint8_t volume, uint8_t *volumeMap, 
-                                        int16_t lower_bound, int16_t upper_bound,
-                                        int16_t step_size, uint8_t max_volume_value) {
-  if (lower_bound == upper_bound) {
-    volumeMap[0] = volume;
-    return;   // if the range is zero, the volume map can only be one number
+                                        uint8_t input_map_size) {
+  if (input_map_size != ((MILLIBEL_BOUND_UPPER - MILLIBEL_BOUND_LOWER) / MILLIBEL_STEP_SIZE + 1)) {
+    return; // volumeMap array isn't the right size to return without doing anything
   }
+  uint8_t a = 0;
+  uint8_t b = 0;
+  uint8_t gain_current_volume = MAX9744::getGainAtVolumeIndex(volume);
 
-  uint8_t a;
-  uint8_t b;
-  uint8_t index_minimum = ((lower_bound <= upper_bound) ? lower_bound : upper_bound);
-  uint8_t index_maximum = ((lower_bound  > upper_bound) ? lower_bound : upper_bound);
-  size_t map_size = (upper_bound - lower_bound) / step_size + 1;
-  uint16_t offset_mB[map_size] = {0};
-  uint8_t GmB_volume = MAX9744::getGainAtVolumeIndex(volume);
-
-  for (uint8_t k = 0; k < map_size; k++) {
-    offset_mB[k] = k * step_size;
-  }
-
-  if (volume == 1) {
+  // find the upper and lower bounds for volume values
+  if (volume == 0) {
     a = 0;
   }
   else {
     for(uint8_t k = volume - 1; k >= 0; k--) {
-      if ((GmB_volume - MAX9744::getGainAtVolumeIndex(k)) > lower_bound) {
+      if ((gain_current_volume - MAX9744::getGainAtVolumeIndex(k)) > MILLIBEL_BOUND_LOWER) {
         a = k + 1;
         break;
       }
@@ -107,21 +97,55 @@ void Audiomath::mapVolumeToBoundedRange(uint8_t volume, uint8_t *volumeMap,
       }
     }
   }
-
-  if (volume == max_volume_value) {
-    b = max_volume_value;
+  if (volume == MAX9744_MAXIMUM_VOL_LEVEL) {
+    b = MAX9744_MAXIMUM_VOL_LEVEL;
   }
   else {
-    for(uint8_t k = volume + 1; k <= max_volume_value; k++) {
-      if ((MAX9744::getGainAtVolumeIndex(k) - GmB_volume) > upper_bound) {
+    for(uint8_t k = volume + 1; k <= MAX9744_MAXIMUM_VOL_LEVEL; k++) {
+      if ((MAX9744::getGainAtVolumeIndex(k) - gain_current_volume) > MILLIBEL_BOUND_UPPER) {
         b = k - 1;
         break;
       }
-      else if (k >= max_volume_value) {
-        b = max_volume_value;
+      else if (k >= MAX9744_MAXIMUM_VOL_LEVEL) {
+        b = MAX9744_MAXIMUM_VOL_LEVEL;
         break;
       }
     }
+  }
+
+  //
+  uint8_t v_range = (b - a) + 1;
+  uint8_t v[v_range] = {0};
+  for (uint8_t k = b; k >= a; k--) {
+    v[b - k] = k;
+  }
+
+  int16_t c_normal[v_range] = {0};
+  int16_t c_offset[v_range] = {0};
+  for (uint8_t k = 0; k < v_range; k++) {
+    c_normal[k] = MAX9744::getGainAtVolumeIndex(v[k]) - gain_current_volume;
+  }
+
+  
+  uint16_t offset_mB[input_map_size] = {0};
+  for (uint8_t k = 0; k < input_map_size; k++) {
+    offset_mB[k] = k * MILLIBEL_STEP_SIZE;
+  }
+
+  uint8_t skip_zero_index = 0;
+  uint8_t map_index = 0;
+  for (uint8_t k = 0; k < input_map_size; k++) {
+    if (c_normal[map_index] == 0) {
+      skip_zero_index = 1;
+    }
+    if ((map_index + skip_zero_index) > v_range) {
+      break;
+    }
+    if ((MILLIBEL_BOUND_UPPER - c_normal[map_index + skip_zero_index]) 
+        < (k * MILLIBEL_STEP_SIZE)) {
+      map_index++;
+    }
+    volumeMap[k] = v[map_index];
   }
 }
 

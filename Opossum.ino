@@ -363,18 +363,28 @@ void loop() {
         Serial.print(volumeRange[k]);
         Serial.print(" ");
       }
-      size_t values_size = volumeRange[1] - volumeRange[0] + 1;
+
+      /* uint8_t values_size = volumeRange[1] - volumeRange[0] + 1;
       int16_t values [values_size] ={0};
       Audiomath::convertVolumeToGain(volumeRange[0], volumeRange[1], 
                                     values, values_size);
       for(uint16_t k = 0; k < values_size; k++) {
         Serial.print(values[k]);
         Serial.print(" ");
-      }
+      } */
+
       for(uint8_t k = 0; k < 25; k++) {
         Serial.print(dBLevels[k]);
         Serial.print(" ");
       }
+      
+      uint8_t volumeMap[25] = {0};
+      Audiomath::mapVolumeToBoundedRange(volOut, volumeMap, 25);
+      for(uint8_t k = 0; k < 25; k++) {
+        Serial.print(volumeMap[k]);
+        Serial.print(" ");
+      }
+
       Serial.print("\n");
     #endif
   }
