@@ -50,15 +50,15 @@ static const uint16_t dB_fast_coefficient[SIZE_DB_FAST_COEFFICIENT] PROGMEM =
 };
 
 // update the relative dB level bands using currently defined volume level
-void Audiomath::dBFastRelativeLevel(uint16_t *dBLevels, uint16_t baseLevel) {
+void Audiomath::dBFastRelativeLevel(uint16_t dBLevels[], const uint16_t baseLevel) {
   for(uint8_t k = 0; k < SIZE_DB_FAST_COEFFICIENT; k++) {
     dBLevels[k] = ((uint32_t)baseLevel * pgm_read_word(&(dB_fast_coefficient[k]))) >> 12;
   }
 }
 
 // return the dB gain values correllating amplifier volume settings
-void Audiomath::convertVolumeToGain(uint8_t start, uint8_t stop, 
-                                    int16_t *values, uint8_t values_size) {
+void Audiomath::convertVolumeToGain(const uint8_t start, const uint8_t stop, 
+                                    int16_t values[], const uint8_t values_size) {
   uint8_t index_minimum = ((start <= stop) ? start : stop);
   uint8_t index_maximum = ((start  > stop) ? start : stop);
   if ((index_maximum - index_minimum) > values_size) {
@@ -72,8 +72,8 @@ void Audiomath::convertVolumeToGain(uint8_t start, uint8_t stop,
 }
 
 // return the dB gain values correllating amplifier volume settings
-void Audiomath::mapVolumeToBoundedRange(uint8_t volume, uint8_t *volumeMap, 
-                                        uint8_t input_map_size) {
+void Audiomath::mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[], 
+                                        const uint8_t input_map_size) {
   if (input_map_size != ((MILLIBEL_BOUND_UPPER - MILLIBEL_BOUND_LOWER) / MILLIBEL_STEP_SIZE + 1)) {
     return; // volumeMap array isn't the right size to return without doing anything
   }
@@ -150,8 +150,9 @@ void Audiomath::mapVolumeToBoundedRange(uint8_t volume, uint8_t *volumeMap,
 }
 
 // use a 32-value circular buffer to track audio levels, MUST be 32 elements
-uint16_t Audiomath::decayBuffer32(uint16_t *data_buffer, size_t buffer_size,
-                                  uint16_t data_mean, const uint16_t nominal_zero_signal_level) {
+uint16_t Audiomath::decayBuffer32(uint16_t data_buffer[], const size_t buffer_size,
+                                  const uint16_t data_mean, 
+                                  const uint16_t nominal_zero_signal_level) {
     if ((uint16_t)buffer_size != (uint16_t)32) {
       // this method will only return accurate values for arrays with 32 elements
       // if this is not the case then don't do anything and return zero

@@ -46,7 +46,7 @@ void MSGEQ7::init(void) {
 }
 
 // find mean of the `array_values` data read from MSGEQ7
-uint16_t MSGEQ7::mean(uint16_t *read_array, size_t array_size) {
+uint16_t MSGEQ7::mean(uint16_t read_array[], const size_t array_size) {
   uint16_t sum = 0;
   if ((uint16_t)array_size != (uint16_t)14) {
     // there are 7 spectral bands so the array size must be 14 bytes
@@ -64,7 +64,7 @@ uint16_t MSGEQ7::mean(uint16_t *read_array, size_t array_size) {
 }
 
 // read spectral band data from the MSGEQ7 and write to `read_array`
-void MSGEQ7::read(uint16_t *read_array, size_t array_size) {
+void MSGEQ7::read(uint16_t read_array[], const size_t array_size) {
   if ((uint16_t)array_size != (uint16_t)14) {
     // there are 7 spectral bands so the array size must be 14 bytes
     // if this is not the case then don't do anything and just return

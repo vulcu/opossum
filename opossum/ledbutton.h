@@ -26,8 +26,8 @@
     public:
       LED(int8_t led_pinAttachment);
 
-      void attach(int8_t led_pinAttachment);
-      void brightness(uint8_t value);
+      void attach(const int8_t led_pinAttachment);
+      void brightness(const uint8_t value);
       void init(void);
       void off(void);
       void on(void);
@@ -57,8 +57,8 @@
     public:
       LED_Button(int8_t button_pinAttachment, LED &led_Attachment);
     
-      void attach(int8_t led_pin);
-      void brightness(uint8_t value);
+      void attach(const int8_t led_pin);
+      void brightness(const uint8_t value);
       void disableInputPullup(void);
       void enableInputPullup(void);
       void init(void);

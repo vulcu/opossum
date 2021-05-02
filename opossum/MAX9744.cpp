@@ -65,7 +65,7 @@ void MAX9744::enable(void) {
 }
 
 // invert the mute signal (needed for use with Adafruit MAX9744 board)
-void MAX9744::invertMuteLogic(bool invert_mute) {
+void MAX9744::invertMuteLogic(const bool invert_mute) {
   this->invert_mute = invert_mute;
 }
 
@@ -97,7 +97,7 @@ void MAX9744::unmute(void) {
 }
 
 // set the amplifier volume to a value between 0 [min] and 63 [max]
-void MAX9744::volume(uint8_t value) {
+void MAX9744::volume(const uint8_t value) {
   // if the value is less than 64 and two-wire is configured
   if ((value < 64) & (TWCR != 0x00)) {
     wire->beginTransmission(i2c_addr);
@@ -107,6 +107,6 @@ void MAX9744::volume(uint8_t value) {
 }
 
 // return the dB gain values correllating amplifier volume settings
-inline int16_t MAX9744::getGainAtVolumeIndex(uint8_t index) {
+inline int16_t MAX9744::getGainAtVolumeIndex(const uint8_t index) {
   return pgm_read_word(&(MAX9744Gain_milliBels[index]));
 }

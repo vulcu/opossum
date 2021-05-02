@@ -25,13 +25,13 @@ LED::LED(int8_t led_pinAttachment) :
 }
 
 // attach the LED to a hardware pin
-void LED::attach(int8_t led_pinAttachment) {
+void LED::attach(const int8_t led_pinAttachment) {
   this->led_pin = led_pinAttachment;
   init();
 }
 
 // write LED PWM value (0-255)
-void LED::brightness(uint8_t value) {
+void LED::brightness(const uint8_t value) {
   if (led_pin >= 0 ) {
       // don't write anything if no valid LED pin is defined
       analogWrite(led_pin, value);
@@ -105,12 +105,12 @@ LED_Button::LED_Button(int8_t button_pinAttachment, LED &led_Attachment) :
 }
 
 // attach an LED pin and configure the LED for use
-void LED_Button::attach(int8_t led_pin) {
+void LED_Button::attach(const int8_t led_pin) {
   led.attach(led_pin);
 }
 
 // write a PWM brightness to the Button LED
-void LED_Button::brightness(uint8_t value) {
+void LED_Button::brightness(const uint8_t value) {
   led.brightness(value);
 }
 

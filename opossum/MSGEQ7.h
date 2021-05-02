@@ -30,8 +30,8 @@
       MSGEQ7(uint8_t strobe_p, uint8_t dc_out, uint8_t reset_p, bool isInputPullup);
 
       void     init(void);
-      uint16_t mean(uint16_t *array_values, size_t array_size);
-      void     read(uint16_t *array_values, size_t array_size);
+      uint16_t mean(uint16_t array_values[], const size_t array_size);
+      void     read(uint16_t array_values[], const size_t array_size);
   };
 
 #endif

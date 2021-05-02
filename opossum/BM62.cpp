@@ -215,7 +215,7 @@ void BM62::next(void) {
 }
 
 // for calculating the checksum of a BM62 UART command:
-uint8_t BM62::checksum(uint8_t command[], uint8_t command_length) {
+uint8_t BM62::checksum(const uint8_t command[], const uint8_t command_length) {
   // BM62 documentation is lacking but pretty sure this is right
   uint16_t chksum = 0;
   for (uint8_t k = 2; k < command_length; k++) {
@@ -241,7 +241,7 @@ void BM62::isProgramMode(void) {
 }
 
 // build the BM62 UART command array w/ checksum and write over serial UART
-void BM62::writeSerialCommand(const uint8_t *instruction, size_t bytes_command) {
+void BM62::writeSerialCommand(const uint8_t instruction[], const size_t bytes_command) {
   // allocation size in bytes of the serial syncword
   uint8_t bytes_syncword = sizeof(serial_uart_sync_header);
 
