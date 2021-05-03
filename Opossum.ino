@@ -318,10 +318,9 @@ void loop() {
  
   vol = analogRead(VOLUME); // read Channel A0 to get volume control position
   
-  // ignore three LSB to filter noise and prevent output level oscillations
-  if (abs(volOut - vol) > 8) {
-    amplifier.volume(lowByte(
-      volOut >> 4));
+  // ignore four LSB to filter noise and prevent output level oscillations
+  if (abs(volOut - vol) >= 16) {
+    amplifier.volume(lowByte(volOut >> 4));
     volOut = vol;
     Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
 
