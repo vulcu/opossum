@@ -192,11 +192,11 @@ void waitForConnection(void) {
 
 // set up and configure the MCU, BM62, and MSGEQ7
 void setup() {
-  // initialize the BM62 bluetooth device
+  // initialize the serial UART connection
   Serial.begin(SERIAL_BAUD_RATE, SERIAL_8N1);
   bluetooth.init();
 
-  // initialize the MMAX9744
+  // initialize the MAX9744
   Wire.begin();
   Wire.setClock(TWI_CLOCK_RATE);
   amplifier.invertMuteLogic(true);
@@ -346,7 +346,7 @@ void loop() {
       }
       
       uint8_t volumeMap[25] = {0};
-      Audiomath::mapVolumeToBoundedRange(volOut, volumeMap, 25);
+      Audiomath::mapVolumeToBoundedRange(lowByte(volOut >> 4), volumeMap, 25);
       for(uint8_t k = 0; k < 25; k++) {
         Serial.print(volumeMap[k]);
         Serial.print(" ");

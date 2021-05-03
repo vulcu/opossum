@@ -74,62 +74,41 @@ void Audiomath::convertVolumeToGain(const uint8_t start, const uint8_t stop,
 // return the dB gain values correllating amplifier volume settings
 void Audiomath::mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[], 
                                         const uint8_t input_map_size) {
-  if (input_map_size != ((MILLIBEL_BOUND_UPPER - MILLIBEL_BOUND_LOWER) / MILLIBEL_STEP_SIZE + 1)) {
+    if (input_map_size != ((MILLIBEL_BOUND_UPPER - MILLIBEL_BOUND_LOWER) / MILLIBEL_STEP_SIZE + 1)) {
     return; // volumeMap array isn't the right size to return without doing anything
   }
   uint8_t a = 0;
-  uint8_t b = 0;
-  uint8_t gain_current_volume = MAX9744::getGainAtVolumeIndex(volume);
+  uint8_t b = MAX9744_MAXIMUM_VOL_LEVEL;
+  int16_t gain_current_volume = MAX9744::getGainAtVolumeIndex(volume);
 
   // find the upper and lower bounds for volume values
-  if (volume == 0) {
-    a = 0;
-  }
-  else {
-    for(uint8_t k = volume - 1; k >= 0; k--) {
-      if ((gain_current_volume - MAX9744::getGainAtVolumeIndex(k)) > MILLIBEL_BOUND_LOWER) {
+  if (volume != 0) {
+    for(int16_t k = volume - 1; k >= 0; k--) {
+      if ((MAX9744::getGainAtVolumeIndex(k) - gain_current_volume) < MILLIBEL_BOUND_LOWER) {
         a = k + 1;
-        break;
-      }
-      else if (k == 0) {
-        a = 0;
         break;
       }
     }
   }
-  if (volume == MAX9744_MAXIMUM_VOL_LEVEL) {
-    b = MAX9744_MAXIMUM_VOL_LEVEL;
-  }
-  else {
-    for(uint8_t k = volume + 1; k <= MAX9744_MAXIMUM_VOL_LEVEL; k++) {
+  if (volume != MAX9744_MAXIMUM_VOL_LEVEL) {
+    for(uint8_t k = volume + 1; k < MAX9744_MAXIMUM_VOL_LEVEL; k++) {
       if ((MAX9744::getGainAtVolumeIndex(k) - gain_current_volume) > MILLIBEL_BOUND_UPPER) {
         b = k - 1;
         break;
       }
-      else if (k >= MAX9744_MAXIMUM_VOL_LEVEL) {
-        b = MAX9744_MAXIMUM_VOL_LEVEL;
-        break;
-      }
     }
   }
 
-  //
   uint8_t v_range = (b - a) + 1;
-  uint8_t v[v_range] = {0};
-  for (uint8_t k = b; k >= a; k--) {
+  uint8_t v[v_range];
+  for (int16_t k = b; k >= (int16_t)a; k--) {
     v[b - k] = k;
   }
 
-  int16_t c_normal[v_range] = {0};
-  int16_t c_offset[v_range] = {0};
+  int16_t c_normal[v_range];
+  //int16_t c_offset[v_range] = {0};
   for (uint8_t k = 0; k < v_range; k++) {
     c_normal[k] = MAX9744::getGainAtVolumeIndex(v[k]) - gain_current_volume;
-  }
-
-  
-  uint16_t offset_mB[input_map_size] = {0};
-  for (uint8_t k = 0; k < input_map_size; k++) {
-    offset_mB[k] = k * MILLIBEL_STEP_SIZE;
   }
 
   uint8_t skip_zero_index = 0;
@@ -138,12 +117,11 @@ void Audiomath::mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[
     if (c_normal[map_index] == 0) {
       skip_zero_index = 1;
     }
-    if ((map_index + skip_zero_index) > v_range) {
-      break;
-    }
-    if ((MILLIBEL_BOUND_UPPER - c_normal[map_index + skip_zero_index]) 
-        < (k * MILLIBEL_STEP_SIZE)) {
-      map_index++;
+    if ((map_index + skip_zero_index) < v_range) {
+      if ((MILLIBEL_BOUND_UPPER - c_normal[map_index + skip_zero_index]) 
+          < (k * MILLIBEL_STEP_SIZE)) {
+        map_index++;
+      }
     }
     volumeMap[k] = v[map_index];
   }
