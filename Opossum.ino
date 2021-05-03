@@ -41,7 +41,6 @@
 #include "opossum/MSGEQ7.cpp"
 
 // buffer index, volume, filtered volume, base level, present level
-uint8_t  volumeRange[2];
 int16_t  vol      = 0;
 int16_t  volOut   = 0;
 uint16_t levelOut = MSGEQ7_ZERO_SIGNAL_LEVEL;
@@ -191,32 +190,6 @@ void waitForConnection(void) {
 }
 
 
-// calculate valid amplifier volume adjustment range (assumes range of 0-63)
-void updateVolumeRange64(void) {
-  uint8_t CurrentVolumeLevel = lowByte(volOut >> 4);
-  // if the volume control value is zero set min/max to zero to mute output
-  if (CurrentVolumeLevel == (uint8_t)0) {
-    volumeRange[0] = 0;
-    volumeRange[1] = 0;
-  }
-  // if the volume control value is less than 7, set lower-bound to 0
-  else if (CurrentVolumeLevel < (uint8_t)7) {
-    volumeRange[0] = 0;
-    volumeRange[1] = CurrentVolumeLevel + 6;
-  }
-  // if the volume control value is less than 7, set lower-bound to 0
-  else if (CurrentVolumeLevel > (uint8_t)57) {
-    volumeRange[0] = CurrentVolumeLevel - 6;
-    volumeRange[1] = 63;
-  }
-  // otherwise set lower bound to (volume - 6), upper bound to (volume + 6)
-  else {
-    volumeRange[0] = CurrentVolumeLevel - 6;
-    volumeRange[1] = CurrentVolumeLevel + 6;
-  }
-}
-
-
 // set up and configure the MCU, BM62, and MSGEQ7
 void setup() {
   // initialize the BM62 bluetooth device
@@ -245,7 +218,6 @@ void setup() {
   vol = analogRead(VOLUME);             // read Volume Control
   amplifier.volume(lowByte(vol >> 4));
   volOut = vol;
-  updateVolumeRange64();
   amplifier.unmute();
   
   // initialize levelBuf to nominal 'zero-signal' value
@@ -351,7 +323,6 @@ void loop() {
     amplifier.volume(lowByte(
       volOut >> 4));
     volOut = vol;
-    updateVolumeRange64();
     Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
 
     #if defined DEBUG
@@ -359,10 +330,6 @@ void loop() {
       Serial.print(" ");
       Serial.print(levelOut);
       Serial.print(" ");
-      for(uint8_t k = 0; k < 2; k++) {
-        Serial.print(volumeRange[k]);
-        Serial.print(" ");
-      }
 
       /* uint8_t values_size = volumeRange[1] - volumeRange[0] + 1;
       int16_t values [values_size] ={0};
