@@ -22,6 +22,7 @@
 
 // include libraries for PROGMEM, SLEEP, & I2C
 #include <avr/pgmspace.h>
+#include <avr/wdt.h>
 
 #include "opossum/opossum.h"
 
@@ -40,12 +41,16 @@
 #include "opossum/MSGEQ7.h"
 #include "opossum/MSGEQ7.cpp"
 
+// declare built-in reset fuction at memory address 0
+void(* resetFunc) (void) = 0;
+
 // buffer index, volume, filtered volume, base level, present level
 int16_t  vol      = 0;
 int16_t  volOut   = 0;
 uint16_t levelOut = MSGEQ7_ZERO_SIGNAL_LEVEL;
 
 // audio levels, audio level buffer, and approx. relative dB levels
+uint8_t  volumeMap[SIZE_DB_FAST_COEFFICIENT];
 uint16_t levelRead[MSGEQ7_SIGNAL_BAND_COUNT];
 uint16_t levelBuf[LEVEL_TRACK_BUFFER_SIZE];
 uint16_t dBLevels[LEVEL_TRACK_BUFFER_SIZE];
@@ -87,7 +92,16 @@ LED led_SW1(S1_LEDPWM);
 LED led_SW2(S2_LEDPWM);
 LED_Button ledbutton_SW2(S2_PIN, led_SW2);
 
+// interrup service routine triggered by the watchdog timer exceeding set period
+ISR(WDT_vect, ISR_BLOCK) {
+  // this shouldn't ever happen so if we're here then something went wrong
+  amplifier.mute();     // mute the audio amplifier
+  amplifier.shutdown(); // then put it in shutdown
+  bluetooth.reset();    // place the bluetooth module into reset/standby
+  resetFunc();          // reset the MCU
+}
 
+// interrup service routine triggered by S2 button state falling from HIGH to LOW
 void ISR_BLOCK_S2_FALLING(void) {
   // execute interrupt code here
   uint32_t currentMillis = millis();
@@ -106,7 +120,7 @@ void ISR_BLOCK_S2_FALLING(void) {
   }
 }
 
-
+// interrup service routine triggered by S2 button state rising from LOW to HIGH
 void ISR_BLOCK_S2_RISING(void) {
   // execute interrupt code here
   uint32_t currentMillis = millis();
@@ -121,7 +135,6 @@ void ISR_BLOCK_S2_RISING(void) {
     attachInterrupt(S2_INTERRUPT_VECTOR, ISR_BLOCK_S2_FALLING, FALLING);
   }
 }
-
 
 // wait for BM62 to indicate a successful A2DP connection
 void waitForConnection(void) {
@@ -162,6 +175,8 @@ void waitForConnection(void) {
         }
       }
     }
+
+    wdt_reset();  // reset the watchdog to prevent accidental system reboot
   }
 
   // turn off the LED and wait, helps distinguish next section
@@ -180,7 +195,9 @@ void waitForConnection(void) {
       delay(2);
     }
   }
-  delay(250);
+
+  wdt_reset();  // reset the watchdog to prevent accidental system reboot
+  delay(250);   // adding a delay here help distiguish a visual pattern
 
   // set the S1 LED brightness to the default 'on' value
   led_SW1.brightness(S1_PWM_DEF);
@@ -189,14 +206,26 @@ void waitForConnection(void) {
   delay(200);
 }
 
-
-// set up and configure the MCU, BM62, and MSGEQ7
+// configure and initialize the WDT along with the system hardware
 void setup() {
-  // initialize the serial UART connection
+  // configure and enable the watchdog timer interrupt to shutdown and reset system
+  cli();  // start by clearing global interrupt enable bit to disable interrupts
+
+  // Clear the watchdog system reset flag (WRDF) per datasheet recommendation (p. 45)
+  MCUSR &= ~(0x01 << WDRF);
+    
+  // Write logical 1 to WDCE and WDE at once to allow alteration of WDT mode (p. 44)
+  WDTCSR = (0x01 << WDCE) | (0x01 << WDE);
+
+  // configure WDT for interrupt not reset and set the WDT timeout period (pp. 44-48)
+  WDTCSR = (0x01 << WDIE) | (WDTO_1S << WDP0);  // enable interrupt and timer period
+  sei();  // set global interrupt enable bit and reenable interrupts
+
+  // initialize the serial UART communication then initialize the bluetooth module
   Serial.begin(SERIAL_BAUD_RATE, SERIAL_8N1);
   bluetooth.init();
 
-  // initialize the MAX9744
+  // initialize I2C communication then initialize the audio amplifier
   Wire.begin();
   Wire.setClock(TWI_CLOCK_RATE);
   amplifier.invertMuteLogic(true);
@@ -234,11 +263,10 @@ void setup() {
   // initialize base volume level and relative dB values
   Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
 
-  // interrupt will often glitch and count when first enabled, so reset this here
+  // SW2 interrupt will often glitch and count when first enabled, so reset this here
   // (after establishing BT connection which gives us a delay) without checking it
   S2_interrupt_state_COUNT = 0;
 }
-
 
 void loop() {
   if (!bluetooth.isConnected()) {
@@ -248,6 +276,9 @@ void loop() {
     bluetooth.stop();
     amplifier.unmute();
   }
+
+  // reset the watchdog timer before beginning the next loop iteration
+  wdt_reset();
 
   // get the elapsed time, in millisecionds, since power-on
   uint32_t currentMillis = millis();
@@ -300,6 +331,13 @@ void loop() {
 
           case feature_autovolume: {
             // automatic gain control enable/disable code goes here
+            while(1); // test the wdt
+            if (!feature_AGC_mode) {
+
+            }
+            else {
+              
+            }
           } break;
 
           default: {
@@ -346,7 +384,6 @@ void loop() {
         Serial.print(" ");
       }
       
-      uint8_t volumeMap[25] = {0};
       Audiomath::mapVolumeToBoundedRange(lowByte(volOut >> 4), volumeMap, 25);
       for(uint8_t k = 0; k < 25; k++) {
         Serial.print(volumeMap[k]);

@@ -71,7 +71,7 @@ void Audiomath::convertVolumeToGain(const uint8_t start, const uint8_t stop,
   }
 }
 
-// return the dB gain values correllating amplifier volume settings
+// return a map of volume thresholds based on gain-to-volume levels at present volume setting
 void Audiomath::mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[], 
                                         const uint8_t input_map_size) {
     if (input_map_size != ((MILLIBEL_BOUND_UPPER - MILLIBEL_BOUND_LOWER) / MILLIBEL_STEP_SIZE + 1)) {
