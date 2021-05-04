@@ -243,8 +243,10 @@ void setup() {
 void loop() {
   if (!bluetooth.isConnected()) {
     // if A2DP connection is lost, halt and wait for reconnection
-    waitForConnection();
+    amplifier.mute();
+    waitForConnection();  // wdt gets reset multiple times during function call
     bluetooth.stop();
+    amplifier.unmute();
   }
 
   // get the elapsed time, in millisecionds, since power-on
