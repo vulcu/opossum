@@ -18,7 +18,7 @@
 
 // comment to deactivate UART debug mode
 #define DEBUG
-//#define BM62_DEBUG
+//#define DEBUG_BM62_SERIAL
 
 // include libraries for PROGMEM, SLEEP, & I2C
 #include <avr/pgmspace.h>

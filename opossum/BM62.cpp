@@ -271,7 +271,7 @@ void BM62::writeSerialCommand(const uint8_t instruction[], const size_t bytes_co
   // write the command buffer to the serial output
   hserial->write(command, sizeof(command));
 
-#ifdef BM62_DEBUG
+#ifdef DEBUG_BM62_SERIAL
   hserial->print("\n");
   hserial->print("--\n");
   for (uint8_t k = 0; k < sizeof(command); k++) {
