@@ -283,6 +283,59 @@ void loop() {
   // get the elapsed time, in millisecionds, since power-on
   uint32_t currentMillis = millis();
 
+  if (S2_button_read_ACTIVE) {
+    if ((currentMillis - S2_button_read_START) >= (S2_READTIME_MILLISECONDS)) {
+      cli();
+      uint8_t S2_buttonStateCount = S2_interrupt_state_COUNT;
+      S2_interrupt_state_COUNT = 0;
+      S2_button_read_ACTIVE = false;
+      sei();
+
+      // switch 2 feature [1=pairing mode, 2=play/pause, 3=EQ mode, 4=autovolume on/off]
+      feature S2_feature = ((S2_buttonStateCount == 1) ? feature_pairing    :
+                            ((S2_buttonStateCount == 2) ? feature_playback   :
+                            ((S2_buttonStateCount == 3) ? feature_equalizer  : 
+                            ((S2_buttonStateCount == 4) ? feature_autovolume : feature_null))));
+      switch (S2_feature) {
+        // MMI action, fast enter pairing mode (from non-off mode)
+        case feature_pairing: {
+          bluetooth.enterPairingMode();
+        } break;
+
+        // media playback play/pause toggle (pauses if playing, plays if paused)
+        case feature_playback: {
+          bluetooth.playPauseToggle();
+        } break;
+
+        // enable/disable an equalizer preset within the bluetooth module DSP
+        case feature_equalizer: {
+          if (!feature_EQ_mode) {
+            bluetooth.setEqualizerPreset(bluetooth.EQ_Classical);
+            feature_EQ_mode = true;
+          }
+          else {
+            bluetooth.setEqualizerPreset(bluetooth.EQ_Off);
+            feature_EQ_mode = false;
+          }
+        } break;
+
+        case feature_autovolume: {
+          //
+          if (!feature_AGC_mode) {
+            feature_AGC_mode = true;
+          }
+          else {
+            feature_AGC_mode = false;
+          }
+        } break;
+
+        default: {
+          // too many button presses or something went wrong, so do nothing
+        } break;
+      }
+    }
+  }
+
   // read audio levels from MSGEQ7 only if enough time has passed
   if (currentMillis - previousMillis >= AUDIO_READ_INTERVAL_MILLISECONDS) {
     // save the time of most recent transmission
@@ -294,58 +347,7 @@ void loop() {
                                         spectrum.mean(levelRead, sizeof(levelRead)),
                                         MSGEQ7_ZERO_SIGNAL_LEVEL);
 
-    if (S2_button_read_ACTIVE) {
-      if ((currentMillis - S2_button_read_START) >= (S2_READTIME_MILLISECONDS)) {
-        cli();
-        uint8_t S2_buttonStateCount = S2_interrupt_state_COUNT;
-        S2_interrupt_state_COUNT = 0;
-        S2_button_read_ACTIVE = false;
-        sei();
-
-        // switch 2 feature [1=pairing mode, 2=play/pause, 3=EQ mode, 4=autovolume on/off]
-        feature S2_feature = ((S2_buttonStateCount == 1) ? feature_pairing    :
-                             ((S2_buttonStateCount == 2) ? feature_playback   :
-                             ((S2_buttonStateCount == 3) ? feature_equalizer  : 
-                             ((S2_buttonStateCount == 4) ? feature_autovolume : feature_null))));
-        switch (S2_feature) {
-          case feature_pairing: {
-            // MMI action, fast enter pairing mode (from non-off mode)
-            bluetooth.enterPairingMode();
-          } break;
-
-          case feature_playback: {
-            // media playback play/pause toggle (pauses if playing, plays if paused)
-            bluetooth.playPauseToggle();
-          } break;
-
-          case feature_equalizer: {
-            if (!feature_EQ_mode) {
-              bluetooth.setEqualizerPreset(bluetooth.EQ_Classical);
-              feature_EQ_mode = true;
-            }
-            else {
-              bluetooth.setEqualizerPreset(bluetooth.EQ_Off);
-              feature_EQ_mode = false;
-            }
-          } break;
-
-          case feature_autovolume: {
-            // automatic gain control enable/disable code goes here
-            while(1); // test the wdt
-            if (!feature_AGC_mode) {
-
-            }
-            else {
-              
-            }
-          } break;
-
-          default: {
-            // too many button presses or something went wrong, so do nothing
-          } break;
-        }
-      }
-    } 
+     
 
     #if defined DEBUG
       uint16_t levelDebug[2] = {(uint16_t)(lowByte(volOut >> 4)), levelOut};
