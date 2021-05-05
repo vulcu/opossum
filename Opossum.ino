@@ -205,6 +205,7 @@ void waitForConnection(void) {
 
   // wait 200 ms to help avoid BM62 missing UART reads
   delay(200);
+  wdt_reset();  // reset the watchdog to prevent accidental system reboot
 }
 
 // configure and initialize the WDT along with the system hardware
@@ -212,13 +213,13 @@ void setup() {
   // configure and enable the watchdog timer interrupt to shutdown and reset system
   cli();  // start by clearing global interrupt enable bit to disable interrupts
 
-  // Clear the watchdog system reset flag (WRDF) per datasheet recommendation (p. 45)
+  // Clear watchdog system reset flag (WRDF) per 32u4 datasheet recommendation (p. 57)
   MCUSR &= ~(0x01 << WDRF);
     
-  // Write logical 1 to WDCE and WDE at once to allow alteration of WDT mode (p. 44)
+  // Write logical 1 to WDCE and WDE at once to allow alteration of WDT mode (p. 56)
   WDTCSR = (0x01 << WDCE) | (0x01 << WDE);
 
-  // configure WDT for interrupt not reset and set the WDT timeout period (pp. 44-48)
+  // configure WDT for interrupt not reset and set the WDT timeout period (pp. 55-61)
   WDTCSR = (0x01 << WDIE) | (WDTO_1S << WDP0);  // enable interrupt and timer period
   sei();  // set global interrupt enable bit and reenable interrupts
 
@@ -270,6 +271,9 @@ void setup() {
 }
 
 void loop() {
+  // reset the watchdog timer before beginning the next loop iteration
+  wdt_reset();
+
   if (!bluetooth.isConnected()) {
     // if A2DP connection is lost, halt and wait for reconnection
     amplifier.mute();
@@ -277,9 +281,6 @@ void loop() {
     bluetooth.stop();
     amplifier.unmute();
   }
-
-  // reset the watchdog timer before beginning the next loop iteration
-  wdt_reset();
 
   // get the elapsed time, in millisecionds, since power-on
   uint32_t currentMillis = millis();
