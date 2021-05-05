@@ -16,9 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// comment to deactivate UART debug mode
-#define DEBUG
+// comment to deactivate varous debug modes
 //#define DEBUG_BM62_SERIAL
+#define DEBUG_LEVELOUT
+//#define DEBUG_VOLUME
 
 // include libraries for PROGMEM, SLEEP, & I2C
 #include <avr/pgmspace.h>
@@ -349,7 +350,7 @@ void loop() {
 
      
 
-    #if defined DEBUG
+    #if defined DEBUG_LEVELOUT
       uint16_t levelDebug[2] = {(uint16_t)(lowByte(volOut >> 4)), levelOut};
       Serial.print(levelDebug[0]);
       Serial.print(" ");
@@ -366,20 +367,11 @@ void loop() {
     volOut = vol;
     Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
 
-    #if defined DEBUG
+    #if defined DEBUG_VOLUME
       Serial.print((uint16_t)(lowByte(volOut >> 4)));
       Serial.print(" ");
       Serial.print(levelOut);
       Serial.print(" ");
-
-      /* uint8_t values_size = volumeRange[1] - volumeRange[0] + 1;
-      int16_t values [values_size] ={0};
-      Audiomath::convertVolumeToGain(volumeRange[0], volumeRange[1], 
-                                    values, values_size);
-      for(uint16_t k = 0; k < values_size; k++) {
-        Serial.print(values[k]);
-        Serial.print(" ");
-      } */
 
       for(uint8_t k = 0; k < 25; k++) {
         Serial.print(dBLevels[k]);
