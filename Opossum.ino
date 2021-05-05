@@ -19,7 +19,7 @@
 // comment to deactivate varous debug modes
 //#define DEBUG_BM62_SERIAL
 #define DEBUG_LEVELOUT
-//#define DEBUG_VOLUME
+#define DEBUG_VOLUME
 
 // include libraries for PROGMEM, SLEEP, & I2C
 #include <avr/pgmspace.h>
@@ -51,14 +51,14 @@ int16_t  volOut   = 0;
 uint16_t levelOut = MSGEQ7_ZERO_SIGNAL_LEVEL;
 
 // audio levels, audio level buffer, and approx. relative dB levels
-uint8_t  volumeMap[SIZE_DB_FAST_COEFFICIENT];
+uint8_t  volumeMap[DB_FAST_COEFFICIENT_COUNT];
 uint16_t levelRead[MSGEQ7_SIGNAL_BAND_COUNT];
 uint16_t levelBuf[LEVEL_TRACK_BUFFER_SIZE];
 uint16_t dBLevels[LEVEL_TRACK_BUFFER_SIZE];
 
 // for tracking automatic gain control and EQ mode feature states
-bool    feature_AGC_mode = false;
-uint8_t feature_EQ_mode  = 0;
+bool feature_AGC_mode = false;
+bool feature_EQ_mode  = false;
 
 // correlates to the number of switch state transitions registered [0, 1, 2, 3, or 4]
 enum feature 
@@ -295,11 +295,11 @@ void loop() {
 
       // switch 2 feature [1=pairing mode, 2=play/pause, 3=EQ mode, 4=autovolume on/off]
       feature S2_feature = ((S2_buttonStateCount == 1) ? feature_pairing    :
-                            ((S2_buttonStateCount == 2) ? feature_playback   :
-                            ((S2_buttonStateCount == 3) ? feature_equalizer  : 
-                            ((S2_buttonStateCount == 4) ? feature_autovolume : feature_null))));
+                           ((S2_buttonStateCount == 2) ? feature_playback   :
+                           ((S2_buttonStateCount == 3) ? feature_equalizer  : 
+                           ((S2_buttonStateCount == 4) ? feature_autovolume : feature_null))));
       switch (S2_feature) {
-        // MMI action, fast enter pairing mode (from non-off mode)
+        // MMI action, enter fast pairing mode (from non-off mode)
         case feature_pairing: {
           bluetooth.enterPairingMode();
         } break;
@@ -321,8 +321,8 @@ void loop() {
           }
         } break;
 
+        // toggle enabled/disabled state of the automatic gain control feature
         case feature_autovolume: {
-          //
           if (!feature_AGC_mode) {
             feature_AGC_mode = true;
           }
@@ -338,37 +338,18 @@ void loop() {
     }
   }
 
-  // read audio levels from MSGEQ7 only if enough time has passed
-  if (currentMillis - previousMillis >= AUDIO_READ_INTERVAL_MILLISECONDS) {
-    // save the time of most recent transmission
-    previousMillis = currentMillis;
-
-    // read weighted audio level data, find mean, calculate buffer value
-    spectrum.read(levelRead, sizeof(levelRead));
-    levelOut = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
-                                        spectrum.mean(levelRead, sizeof(levelRead)),
-                                        MSGEQ7_ZERO_SIGNAL_LEVEL);
-
-     
-
-    #if defined DEBUG_LEVELOUT
-      uint16_t levelDebug[2] = {(uint16_t)(lowByte(volOut >> 4)), levelOut};
-      Serial.print(levelDebug[0]);
-      Serial.print(" ");
-      Serial.print(levelDebug[1]);
-      Serial.print(" \n");
-    #endif
-  }
- 
-  vol = analogRead(VOLUME); // read Channel A0 to get volume control position
+  // read Channel A0 to get volume control position as a 10-bit value
+  vol = analogRead(VOLUME); 
   
   // ignore four LSB to filter noise and prevent output level oscillations
   if (abs(volOut - vol) >= 16) {
     amplifier.volume(lowByte(volOut >> 4));
     volOut = vol;
+
+    // recalculate the the relative dB levels based on most recent level reading
     Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
 
-    #if defined DEBUG_VOLUME
+    #ifdef DEBUG_VOLUME
       Serial.print((uint16_t)(lowByte(volOut >> 4)));
       Serial.print(" ");
       Serial.print(levelOut);
@@ -386,6 +367,35 @@ void loop() {
       }
 
       Serial.print("\n");
+    #endif
+  }
+
+  // read audio levels from MSGEQ7 only if enough time has passed
+  if (currentMillis - previousMillis >= AUDIO_READ_INTERVAL_MILLISECONDS) {
+    // save the time of most recent transmission
+    previousMillis = currentMillis;
+
+    // read weighted audio level data, find mean, calculate buffer value
+    spectrum.read(levelRead, sizeof(levelRead));
+    levelOut = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
+                                        spectrum.mean(levelRead, sizeof(levelRead)),
+                                        MSGEQ7_ZERO_SIGNAL_LEVEL);
+
+      if (feature_AGC_mode) {
+        Audiomath::mapVolumeToBoundedRange(lowByte(volOut >> 4), volumeMap, 25);
+        for(uint16_t k = 0; k < DB_FAST_COEFFICIENT_COUNT; k++) {
+          if (dBLevels[k] > levelOut) {
+            // agc code goes here somewhere
+          }
+        }
+      }
+
+    #ifdef DEBUG_LEVELOUT
+      uint16_t levelDebug[2] = {(uint16_t)(lowByte(volOut >> 4)), levelOut};
+      Serial.print(levelDebug[0]);
+      Serial.print(" ");
+      Serial.print(levelDebug[1]);
+      Serial.print(" \n");
     #endif
   }
 }
