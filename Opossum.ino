@@ -104,7 +104,6 @@ ISR(WDT_vect, ISR_BLOCK) {
 
 // interrup service routine triggered by S2 button state falling from HIGH to LOW
 void ISR_BLOCK_S2_FALLING(void) {
-  // execute interrupt code here
   uint32_t currentMillis = millis();
   if ((currentMillis - S2_interrupt_debounce_START) > S2_DEBOUNCE_MILLISECONDS) {
     detachInterrupt(S2_INTERRUPT_VECTOR);
@@ -123,7 +122,6 @@ void ISR_BLOCK_S2_FALLING(void) {
 
 // interrup service routine triggered by S2 button state rising from LOW to HIGH
 void ISR_BLOCK_S2_RISING(void) {
-  // execute interrupt code here
   uint32_t currentMillis = millis();
   if ((currentMillis - S2_interrupt_debounce_START) > S2_DEBOUNCE_MILLISECONDS) {
     detachInterrupt(S2_INTERRUPT_VECTOR);
@@ -140,10 +138,8 @@ void ISR_BLOCK_S2_RISING(void) {
 // wait for BM62 to indicate a successful A2DP connection
 void waitForConnection(void) {
   // keep track of PWM level and direction for each switch LED
-  bool S1_PWM_DIR = HIGH;  // HIGH = rising, LOW = falling 
-  bool S2_PWM_DIR = HIGH;  // HIGH = rising, LOW = falling
-  uint16_t S1_PWM_VAL = 0;     // PWM analogWrite value for S1
-  uint16_t S2_PWM_VAL = 0;     // PWM analogWrite value for S2
+  bool S1_PWM_DIR = HIGH;   // HIGH = rising, LOW = falling
+  uint16_t S1_PWM_VAL = 0;  // PWM analogWrite value for S1
 
   while (!bluetooth.isConnected()) {
     // get the elapsed time, in milliseconds, since power-on
