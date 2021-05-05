@@ -26,7 +26,7 @@
 
   #define MAX9744_MAXIMUM_VOL_LEVEL  (uint8_t)63
 
-  #define SIZE_DB_FAST_COEFFICIENT (uint8_t)25
+  #define DB_FAST_COEFFICIENT_COUNT (uint8_t)25
 
   // AGC range bounds and analysis step size (in 1/100ths of a dB)
   // these values must be hardcoded to match `coeffecients_dB`
@@ -40,7 +40,7 @@
 static uint8_t buffer_indx_32 = 0;
 
 // Coefficient table for fast dB approximations
-static const uint16_t dB_fast_coefficient[SIZE_DB_FAST_COEFFICIENT] PROGMEM =
+static const uint16_t dB_fast_coefficient[DB_FAST_COEFFICIENT_COUNT] PROGMEM =
 {
   2053, 2175, 2303, 2440, 2584,
   2738, 2900, 3072, 3254, 3446,
@@ -51,7 +51,7 @@ static const uint16_t dB_fast_coefficient[SIZE_DB_FAST_COEFFICIENT] PROGMEM =
 
 // update the relative dB level bands using currently defined volume level
 void Audiomath::dBFastRelativeLevel(uint16_t dBLevels[], const uint16_t baseLevel) {
-  for(uint8_t k = 0; k < SIZE_DB_FAST_COEFFICIENT; k++) {
+  for(uint8_t k = 0; k < DB_FAST_COEFFICIENT_COUNT; k++) {
     dBLevels[k] = ((uint32_t)baseLevel * pgm_read_word(&(dB_fast_coefficient[k]))) >> 12;
   }
 }
