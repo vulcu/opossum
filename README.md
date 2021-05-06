@@ -26,7 +26,7 @@ At present, the system will automatically connect to a device via bluetooth, pla
   * ~~circular level tracking buffer~~ _done_
 * ~~the button interrupts are working and accurately debounce and count _**N**_ switch transitions within period _**T**_, now that count needs to be used to:~~ _done_
   1) ~~[single button press] play/pause media playback~~ _done_
-  2) [double button press] turn automatic gain control on/off
+  2) ~~[double button press] turn automatic gain control on/off~~ _done_
   3) ~~[press and hold down] disconnect bluetooth and enter pairing mode~~ _done_
   4) ~~[press once, then press again and hold] enable/disable EQ preset~~ _done_
 * connect up the spectrum level detection algorithm to the amplifier volume control such that the first controls the second
