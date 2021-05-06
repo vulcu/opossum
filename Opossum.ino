@@ -48,7 +48,7 @@ void(* resetFunc) (void) = 0;
 // buffer index, volume, filtered volume, base level, present level
 int16_t  vol      = 0;
 int16_t  volOut   = 0;
-uint16_t levelOut = MSGEQ7_ZERO_SIGNAL_LEVEL;
+uint16_t audio_level = MSGEQ7_ZERO_SIGNAL_LEVEL;
 
 // audio levels, audio level buffer, and approx. relative dB levels
 uint8_t  volumeMap[DB_FAST_COEFFICIENT_COUNT];
@@ -254,12 +254,12 @@ void setup() {
   
   // read weighted audio level data, find mean, calculate buffer value
   spectrum.read(levelRead, sizeof(levelRead));
-  levelOut = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
-                                      spectrum.mean(levelRead, sizeof(levelRead)), 
-                                      MSGEQ7_ZERO_SIGNAL_LEVEL);
+  audio_level = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
+                                         spectrum.mean(levelRead, sizeof(levelRead)), 
+                                         MSGEQ7_ZERO_SIGNAL_LEVEL);
 
   // initialize base volume level and relative dB values
-  Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
+  Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
 
   // SW2 interrupt will often glitch and count when first enabled, so reset this here
   // (after establishing BT connection which gives us a delay) without checking it
@@ -343,12 +343,12 @@ void loop() {
     volOut = vol;
 
     // recalculate the the relative dB levels based on most recent level reading
-    Audiomath::dBFastRelativeLevel(dBLevels, levelOut);
+    Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
 
     #ifdef DEBUG_VOLUME
       Serial.print((uint16_t)(lowByte(volOut >> 4)));
       Serial.print(" ");
-      Serial.print(levelOut);
+      Serial.print(audio_level);
       Serial.print(" ");
 
       for(uint8_t k = 0; k < 25; k++) {
@@ -387,7 +387,7 @@ void loop() {
       }
 
     #ifdef DEBUG_LEVELOUT
-      uint16_t levelDebug[2] = {(uint16_t)(lowByte(volOut >> 4)), levelOut};
+      uint16_t levelDebug[2] = {(uint16_t)(volume_out), audio_level};
       Serial.print(levelDebug[0]);
       Serial.print(" ");
       Serial.print(levelDebug[1]);
