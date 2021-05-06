@@ -46,8 +46,8 @@
 void(* resetFunc) (void) = 0;
 
 // buffer index, volume, filtered volume, base level, present level
-int16_t  vol      = 0;
-int16_t  volOut   = 0;
+int16_t  volume_out  = 0;
+int16_t  volume_raw  = 0;
 uint16_t audio_level = MSGEQ7_ZERO_SIGNAL_LEVEL;
 
 // audio levels, audio level buffer, and approx. relative dB levels
@@ -242,9 +242,8 @@ void setup() {
   bluetooth.stop();
   
   // set initial MAX9744 amplifier volume parameter and unmute
-  vol = analogRead(VOLUME);             // read Volume Control
-  amplifier.volume(lowByte(vol >> 4));
-  volOut = vol;
+  volume_out = analogRead(VOLUME);             // read Volume Control
+  amplifier.volume(lowByte(volume_out >> 4));
   amplifier.unmute();
   
   // initialize levelBuf to nominal 'zero-signal' value
@@ -321,6 +320,10 @@ void loop() {
         case feature_autovolume: {
           if (!feature_AGC_mode) {
             feature_AGC_mode = true;
+
+            // recalculate the the relative dB levels based on most recent level reading
+            Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
+            Audiomath::mapVolumeToBoundedRange(lowByte(volume_raw >> 4), volumeMap, sizeof(volumeMap));
           }
           else {
             feature_AGC_mode = false;
@@ -335,18 +338,21 @@ void loop() {
   }
 
   // read Channel A0 to get volume control position as a 10-bit value
-  vol = analogRead(VOLUME); 
+  volume_raw = analogRead(VOLUME); 
   
   // ignore four LSB to filter noise and prevent output level oscillations
-  if (abs(volOut - vol) >= 16) {
-    amplifier.volume(lowByte(volOut >> 4));
-    volOut = vol;
+  if (abs(volume_out - volume_raw) >= 16) {
+    volume_out = volume_raw;
+    amplifier.volume(lowByte(volume_raw >> 4));
 
-    // recalculate the the relative dB levels based on most recent level reading
-    Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
+    if (feature_AGC_mode) {
+      // recalculate the the relative dB levels based on most recent level reading
+      Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
+      Audiomath::mapVolumeToBoundedRange(lowByte(volume_raw >> 4), volumeMap, sizeof(volumeMap));
+    }
 
     #ifdef DEBUG_VOLUME
-      Serial.print((uint16_t)(lowByte(volOut >> 4)));
+      Serial.print((uint16_t)(volume_out));
       Serial.print(" ");
       Serial.print(audio_level);
       Serial.print(" ");
@@ -356,7 +362,7 @@ void loop() {
         Serial.print(" ");
       }
       
-      Audiomath::mapVolumeToBoundedRange(lowByte(volOut >> 4), volumeMap, 25);
+      Audiomath::mapVolumeToBoundedRange(lowByte(volume_out >> 4), volumeMap, 25);
       for(uint8_t k = 0; k < 25; k++) {
         Serial.print(volumeMap[k]);
         Serial.print(" ");
@@ -373,18 +379,13 @@ void loop() {
 
     // read weighted audio level data, find mean, calculate buffer value
     spectrum.read(levelRead, sizeof(levelRead));
-    levelOut = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
-                                        spectrum.mean(levelRead, sizeof(levelRead)),
-                                        MSGEQ7_ZERO_SIGNAL_LEVEL);
+    audio_level = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
+                                           spectrum.mean(levelRead, DB_FAST_COEFFICIENT_COUNT),
+                                           MSGEQ7_ZERO_SIGNAL_LEVEL);
 
-      if (feature_AGC_mode) {
-        Audiomath::mapVolumeToBoundedRange(lowByte(volOut >> 4), volumeMap, 25);
-        for(uint16_t k = 0; k < DB_FAST_COEFFICIENT_COUNT; k++) {
-          if (dBLevels[k] > levelOut) {
-            // agc code goes here somewhere
-          }
-        }
-      }
+    if (feature_AGC_mode) {
+      // agc code goes here somewhere
+    }
 
     #ifdef DEBUG_LEVELOUT
       uint16_t levelDebug[2] = {(uint16_t)(volume_out), audio_level};
