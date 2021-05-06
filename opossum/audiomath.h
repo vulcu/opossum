@@ -22,12 +22,12 @@
   class Audiomath {
     public:
       static void     convertVolumeToGain(const uint8_t start, const uint8_t stop, 
-                                          int16_t values[], const uint8_t size);
+                                          int16_t values[], const size_t size);
       static void     dBFastRelativeLevel(uint16_t dBLevels[], const uint16_t baseLevel);
       static uint16_t decayBuffer32(uint16_t data_buffer[], const size_t buffer_size, 
                                     uint16_t const data_mean, const uint16_t nominal_zero_signal_level);
       static void     mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[], 
-                                              const uint8_t size_volumeMap);
+                                              const size_t size_volumeMap);
   };
 
 #endif

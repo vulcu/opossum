@@ -58,7 +58,7 @@ void Audiomath::dBFastRelativeLevel(uint16_t dBLevels[], const uint16_t baseLeve
 
 // return the dB gain values correllating amplifier volume settings
 void Audiomath::convertVolumeToGain(const uint8_t start, const uint8_t stop, 
-                                    int16_t values[], const uint8_t values_size) {
+                                    int16_t values[], const size_t values_size) {
   uint8_t index_minimum = ((start <= stop) ? start : stop);
   uint8_t index_maximum = ((start  > stop) ? start : stop);
   if ((index_maximum - index_minimum) > values_size) {
@@ -73,9 +73,9 @@ void Audiomath::convertVolumeToGain(const uint8_t start, const uint8_t stop,
 
 // return a map of volume thresholds based on gain-to-volume levels at present volume setting
 void Audiomath::mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[], 
-                                        const uint8_t input_map_size) {
-    if (input_map_size != ((MILLIBEL_BOUND_UPPER - MILLIBEL_BOUND_LOWER) / MILLIBEL_STEP_SIZE + 1)) {
-    return; // volumeMap array isn't the right size to return without doing anything
+                                        const size_t input_map_size) {
+  if (input_map_size != (size_t)DB_FAST_COEFFICIENT_COUNT) {
+    return; // volumeMap array isn't sized right so return without doing anything
   }
   uint8_t a = 0;
   uint8_t b = MAX9744_MAXIMUM_VOL_LEVEL;
