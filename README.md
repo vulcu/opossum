@@ -21,16 +21,16 @@ A bluetooth-connected amplifier utilizing a microcontroller continuously analyzi
 At present, the system will automatically connect to a device via bluetooth, play audio from that device, reestablish a lost connection, control the amplifier volume, read and process audio levels from the MSGEQ7, determine relative dB levels for audio data and automatically recalculate those levels when the volume is manually adjusted. Other than the fact it's not completely plumbed together yet, a lot of the code is in there and working reliably.
 
 #### Remaining Work ####
-* ~~move some remaining functions out of main file and into related classes~~ _complete_
-  * ~~volume range update~~ _won't do, makes sense to leave where it is_
+* ~~move some remaining functions out of main file~~ _complete_
+  * ~~volume range update~~ _removed_
   * ~~circular level tracking buffer~~ _done_
-* the button interrupts are working and accurately debounce and count _**N**_ switch transitions within period _**T**_, now that count needs to be used to:
+* ~~the button interrupts are working and accurately debounce and count _**N**_ switch transitions within period _**T**_, now that count needs to be used to:~~ _done_
   1) ~~[single button press] play/pause media playback~~ _done_
   2) [double button press] turn automatic gain control on/off
   3) ~~[press and hold down] disconnect bluetooth and enter pairing mode~~ _done_
   4) ~~[press once, then press again and hold] enable/disable EQ preset~~ _done_
 * connect up the spectrum level detection algorithm to the amplifier volume control such that the first controls the second
-  * the 'adjustment range' needs to be mapped to the available gain steps which exist relative to the present gain setting, since this varies
+  * ~~the 'adjustment range' needs to be mapped to the available gain steps which exist relative to the present gain setting, since this varies~~ _done_
   * this is also going to need some kind of hysterysis
 * automated gain adjustments should pulse the secondary front panel LED in the direction of the adjustment when they occur (`bright >> baseline >> bright` or `dim >> baseline >> dim`)
 
