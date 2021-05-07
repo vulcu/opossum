@@ -269,8 +269,8 @@ void loop() {
   // reset the watchdog timer before beginning the next loop iteration
   wdt_reset();
 
+  // if A2DP connection is lost, halt and wait for reconnection
   if (!bluetooth.isConnected()) {
-    // if A2DP connection is lost, halt and wait for reconnection
     amplifier.mute();
     waitForConnection();  // wdt gets reset multiple times during function call
     bluetooth.stop();
@@ -280,6 +280,7 @@ void loop() {
   // get the elapsed time, in millisecionds, since power-on
   uint32_t currentMillis = millis();
 
+  // check button interrupt status and execute corresponding feature functions
   if (S2_button_read_ACTIVE) {
     if ((currentMillis - S2_button_read_START) >= (S2_READTIME_MILLISECONDS)) {
       cli();
@@ -323,7 +324,7 @@ void loop() {
 
             // recalculate the the relative dB levels based on most recent level reading
             Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
-            Audiomath::mapVolumeToBoundedRange(lowByte(volume_raw >> 4), volumeMap, sizeof(volumeMap));
+            Audiomath::mapVolumeToBoundedRange(lowByte(volume_out >> 4), volumeMap, sizeof(volumeMap));
           }
           else {
             feature_AGC_mode = false;
@@ -345,8 +346,8 @@ void loop() {
     volume_out = volume_raw;
     amplifier.volume(lowByte(volume_raw >> 4));
 
+    // recalculate the the relative dB levels based on most recent level reading
     if (feature_AGC_mode) {
-      // recalculate the the relative dB levels based on most recent level reading
       Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
       Audiomath::mapVolumeToBoundedRange(lowByte(volume_raw >> 4), volumeMap, sizeof(volumeMap));
     }
