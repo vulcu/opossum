@@ -71,6 +71,45 @@ void Audiomath::convertVolumeToGain(const uint8_t start, const uint8_t stop,
   }
 }
 
+// use a 32-value circular buffer to track audio levels, MUST be 32 elements
+uint16_t Audiomath::decayBuffer32(uint16_t data_buffer[], const size_t buffer_size,
+                                  const uint16_t data_mean, 
+                                  const uint16_t nominal_zero_signal_level) {
+    if ((uint16_t)buffer_size != (uint16_t)32) {
+      // this method will only return accurate values for arrays with 32 elements
+      // if this is not the case then don't do anything and return zero
+      return (uint16_t)0;
+    }
+    else {
+      if (buffer_indx_32 >= 32) {
+        buffer_indx_32 = 0;
+      }
+      if (data_mean > data_buffer[buffer_indx_32]) {
+        // if the new value is greater, use value halfway between old and new
+        data_buffer[buffer_indx_32] = data_buffer[buffer_indx_32] +
+          ((data_mean - data_buffer[buffer_indx_32]) >> 1);
+      }
+      else if (data_mean < ((nominal_zero_signal_level * (uint16_t)18) >> 4)) {
+        // if the latest level is less a small % over the nominal zero signal,
+        // there's probs no significant audio signal so don't update buffer
+      }
+      else {
+        // otherwise, decay the current value by approximately 3%
+        data_buffer[buffer_indx_32] = (data_buffer[buffer_indx_32] * 31L) >> 5;
+      }
+      buffer_indx_32++;
+
+      // calculate total sum of exponential buffer array
+      uint32_t sum = 0;
+      for (uint16_t k = 0; k < 32; k++) {
+        sum = sum + data_buffer[k];
+      }
+
+      // divide the sum by 32 and return the array mean
+      return (uint16_t)(sum >> 5);
+    }
+}
+
 // return a map of volume thresholds based on gain-to-volume levels at present volume setting
 void Audiomath::mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[], 
                                         const size_t input_map_size) {
@@ -127,41 +166,27 @@ void Audiomath::mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[
   }
 }
 
-// use a 32-value circular buffer to track audio levels, MUST be 32 elements
-uint16_t Audiomath::decayBuffer32(uint16_t data_buffer[], const size_t buffer_size,
-                                  const uint16_t data_mean, 
-                                  const uint16_t nominal_zero_signal_level) {
-    if ((uint16_t)buffer_size != (uint16_t)32) {
-      // this method will only return accurate values for arrays with 32 elements
-      // if this is not the case then don't do anything and return zero
-      return (uint16_t)0;
-    }
-    else {
-      if (buffer_indx_32 >= 32) {
-        buffer_indx_32 = 0;
-      }
-      if (data_mean > data_buffer[buffer_indx_32]) {
-        // if the new value is greater, use value halfway between old and new
-        data_buffer[buffer_indx_32] = data_buffer[buffer_indx_32] +
-          ((data_mean - data_buffer[buffer_indx_32]) >> 1);
-      }
-      else if (data_mean < ((nominal_zero_signal_level * (uint16_t)18) >> 4)) {
-        // if the latest level is less a small % over the nominal zero signal,
-        // there's probs no significant audio signal so don't update buffer
-      }
-      else {
-        // otherwise, decay the current value by approximately 3%
-        data_buffer[buffer_indx_32] = (data_buffer[buffer_indx_32] * 31L) >> 5;
-      }
-      buffer_indx_32++;
+// return a hysterisis-filtered volume map index value that corresponds to the mean audio level
+uint16_t Audiomath::getVolumeMapIndx(const uint16_t data_mean, const size_t input_map_size) {
+  if (input_map_size != (size_t)DB_FAST_COEFFICIENT_COUNT) {
+    return; // volumeMap array isn't sized right so return without doing anything
+  }
 
-      // calculate total sum of exponential buffer array
-      uint32_t sum = 0;
-      for (uint16_t k = 0; k < 32; k++) {
-        sum = sum + data_buffer[k];
-      }
+// indx = 1 * ones(length(raw_audio_level), 1);
+// indx(1) = 13;
+// prev_indx = 1;
 
-      // divide the sum by 32 and return the array mean
-      return (uint16_t)(sum >> 5);
-    }
+//   for k=DB_FAST_COEFFICIENT_COUNT:-1:2
+//     if (mean_audio_level(m) > levels_raw(k))
+//       if (abs(prev_indx - (k - 1)) > 1)  
+//         indx(m) = k-1;
+//         prev_indx = indx(m);
+//         break;
+//       else
+//         indx(m) = prev_indx;
+//         break;
+//       end
+//     end
+//   end
+
 }

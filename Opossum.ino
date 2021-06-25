@@ -247,7 +247,7 @@ void setup() {
   amplifier.unmute();
   
   // initialize levelBuf to nominal 'zero-signal' value
-  for (uint8_t k = 0; k < 32; k++) {
+  for (uint8_t k = 0; k < LEVEL_TRACK_BUFFER_SIZE; k++) {
     levelBuf[k] = MSGEQ7_ZERO_SIGNAL_LEVEL;
   }
   
