@@ -40,7 +40,7 @@
 static uint8_t buffer_indx_32 = 0;
 
 // index for keeping track of the most recent Volume Map index
-static uint8_t vm_index_previous = (DB_FAST_COEFFICIENT_COUNT >> 2);
+static uint8_t vm_index_previous = (DB_FAST_COEFFICIENT_COUNT >> 1);
 
 // Coefficient table for fast dB approximations
 static const uint16_t dB_fast_coefficient[DB_FAST_COEFFICIENT_COUNT] PROGMEM =
@@ -174,7 +174,7 @@ uint8_t Audiomath::getVolumeMapIndx(const uint16_t audio_level, const uint16_t d
                                     const size_t dBLevels_size) {
   // check dBLevels array is sized correctly, if not then return default mid-array index
   if (dBLevels_size != (size_t)DB_FAST_COEFFICIENT_COUNT) {
-    return (uint8_t)(DB_FAST_COEFFICIENT_COUNT >> 2); 
+    return (uint8_t)(DB_FAST_COEFFICIENT_COUNT >> 1); 
   }
   for (int8_t k = (DB_FAST_COEFFICIENT_COUNT - 1); k > 0; k--) {
     if (dBLevels[k] < audio_level) {

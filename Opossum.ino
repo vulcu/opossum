@@ -54,7 +54,7 @@ uint16_t audio_level = MSGEQ7_ZERO_SIGNAL_LEVEL;
 uint8_t  volumeMap[DB_FAST_COEFFICIENT_COUNT];
 uint16_t levelRead[MSGEQ7_SIGNAL_BAND_COUNT];
 uint16_t levelBuf[LEVEL_TRACK_BUFFER_SIZE];
-uint16_t dBLevels[LEVEL_TRACK_BUFFER_SIZE];
+uint16_t dBLevels[DB_FAST_COEFFICIENT_COUNT];
 
 // for tracking automatic gain control and EQ mode feature states
 bool feature_AGC_mode = false;
@@ -381,7 +381,7 @@ void loop() {
     // read weighted audio level data, find mean, calculate buffer value
     spectrum.read(levelRead, sizeof(levelRead));
     audio_level = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
-                                           spectrum.mean(levelRead, DB_FAST_COEFFICIENT_COUNT),
+                                           spectrum.mean(levelRead, sizeof(levelRead)),
                                            MSGEQ7_ZERO_SIGNAL_LEVEL);
 
     uint8_t vm_index = 255;
