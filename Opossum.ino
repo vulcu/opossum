@@ -45,7 +45,7 @@
 // declare built-in reset fuction at memory address 0
 void(* resetFunc) (void) = 0;
 
-// buffer index, volume, filtered volume, base level, present level
+// filtered volume, raw volume, mean audio buffer level
 int16_t  volume_out  = 0;
 int16_t  volume_raw  = 0;
 uint16_t audio_level = MSGEQ7_ZERO_SIGNAL_LEVEL;
@@ -384,8 +384,9 @@ void loop() {
                                            spectrum.mean(levelRead, DB_FAST_COEFFICIENT_COUNT),
                                            MSGEQ7_ZERO_SIGNAL_LEVEL);
 
+    uint8_t vm_index = 255;
     if (feature_AGC_mode) {
-      // agc code goes here somewhere
+      vm_index = Audiomath::getVolumeMapIndx(audio_level, dBLevels, sizeof(dBLevels));
     }
 
     #ifdef DEBUG_LEVELOUT
@@ -393,6 +394,8 @@ void loop() {
       Serial.print(levelDebug[0]);
       Serial.print(" ");
       Serial.print(levelDebug[1]);
+      Serial.print(" ");
+      Serial.print(vm_index);
       Serial.print(" \n");
     #endif
   }

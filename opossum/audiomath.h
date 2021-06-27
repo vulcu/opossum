@@ -28,7 +28,8 @@
                                     uint16_t const data_mean, const uint16_t nominal_zero_signal_level);
       static void     mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[], 
                                               const size_t size_volumeMap);
-      static uint16_t getVolumeMapIndx(const uint16_t data_mean, const size_t input_map_size)
+      static uint8_t  getVolumeMapIndx(const uint16_t audio_level, const uint16_t dBLevels[], 
+                                       const size_t dBLevels_size);
   };
 
 #endif

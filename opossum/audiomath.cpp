@@ -39,6 +39,9 @@
 // index for keeping track of the buffer used by decayBuffer32
 static uint8_t buffer_indx_32 = 0;
 
+// index for keeping track of the most recent Volume Map index
+static uint8_t vm_index_previous = (DB_FAST_COEFFICIENT_COUNT >> 2);
+
 // Coefficient table for fast dB approximations
 static const uint16_t dB_fast_coefficient[DB_FAST_COEFFICIENT_COUNT] PROGMEM =
 {
@@ -167,26 +170,18 @@ void Audiomath::mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[
 }
 
 // return a hysterisis-filtered volume map index value that corresponds to the mean audio level
-uint16_t Audiomath::getVolumeMapIndx(const uint16_t data_mean, const size_t input_map_size) {
-  if (input_map_size != (size_t)DB_FAST_COEFFICIENT_COUNT) {
-    return; // volumeMap array isn't sized right so return without doing anything
+uint8_t Audiomath::getVolumeMapIndx(const uint16_t audio_level, const uint16_t dBLevels[], 
+                                    const size_t dBLevels_size) {
+  // check dBLevels array is sized correctly, if not then return default mid-array index
+  if (dBLevels_size != (size_t)DB_FAST_COEFFICIENT_COUNT) {
+    return (uint8_t)(DB_FAST_COEFFICIENT_COUNT >> 2); 
   }
-
-// indx = 1 * ones(length(raw_audio_level), 1);
-// indx(1) = 13;
-// prev_indx = 1;
-
-//   for k=DB_FAST_COEFFICIENT_COUNT:-1:2
-//     if (mean_audio_level(m) > levels_raw(k))
-//       if (abs(prev_indx - (k - 1)) > 1)  
-//         indx(m) = k-1;
-//         prev_indx = indx(m);
-//         break;
-//       else
-//         indx(m) = prev_indx;
-//         break;
-//       end
-//     end
-//   end
-
+  for (int8_t k = (DB_FAST_COEFFICIENT_COUNT - 1); k > 0; k--) {
+    if (dBLevels[k] < audio_level) {
+      if (abs(vm_index_previous - k) > 2) {
+        vm_index_previous = k;
+      }
+    }
+  }
+  return vm_index_previous;
 }
