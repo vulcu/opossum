@@ -353,7 +353,7 @@ void loop() {
     }
 
     #ifdef DEBUG_VOLUME
-      Serial.print((uint16_t)(volume_out));
+      Serial.print((uint16_t)(volume_out >> 4));
       Serial.print(" ");
       Serial.print(audio_level);
       Serial.print(" ");
@@ -390,7 +390,7 @@ void loop() {
     }
 
     #ifdef DEBUG_LEVELOUT
-      uint16_t levelDebug[2] = {(uint16_t)(volume_out), audio_level};
+      uint16_t levelDebug[2] = {(uint16_t)(volume_out >> 4), audio_level};
       Serial.print(levelDebug[0]);
       Serial.print(" ");
       Serial.print(levelDebug[1]);
