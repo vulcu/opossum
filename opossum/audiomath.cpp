@@ -89,8 +89,8 @@ uint16_t Audiomath::decayBuffer32(uint16_t data_buffer[], const size_t buffer_si
       }
       if (data_mean > data_buffer[audiomath_buffer_indx_32]) {
         // if the new value is greater, use value halfway between old and new
-        data_buffer[buffer_indx_32] = data_buffer[buffer_indx_32] +
-          ((data_mean - data_buffer[buffer_indx_32]) >> 1);
+        data_buffer[audiomath_buffer_indx_32] = data_buffer[audiomath_buffer_indx_32] +
+          ((data_mean - data_buffer[audiomath_buffer_indx_32]) >> 1);
       }
       else if (data_mean < ((nominal_zero_signal_level * (uint16_t)18) >> 4)) {
         // if the latest level is less a small % over the nominal zero signal,
