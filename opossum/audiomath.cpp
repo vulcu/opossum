@@ -180,7 +180,7 @@ uint8_t Audiomath::getVolumeMapIndx(const uint16_t audio_level, const uint16_t d
   if (dBLevels_size != (size_t)(DB_FAST_COEFFICIENT_COUNT << 1)) {
     return (uint8_t)(DB_FAST_COEFFICIENT_COUNT >> 1);
   }
-  for (int8_t k = (DB_FAST_COEFFICIENT_COUNT - 1); k > 0; k--) {
+  for (int8_t k = (DB_FAST_COEFFICIENT_COUNT - 1); k >= 0; k--) {
     if (dBLevels[k] < audio_level) {
       if (abs(audiomath_vm_index_previous - k) > 1) {
         audiomath_vm_index_previous = k;
