@@ -45,7 +45,7 @@
 // declare built-in reset fuction at memory address 0
 void(* resetFunc) (void) = 0;
 
-// filtered volume, raw volume, mean audio buffer level
+// volume map index, filtered volume, raw volume, mean audio buffer level
 int16_t  volume_out  = 0;
 int16_t  volume_raw  = 0;
 uint16_t audio_level = MSGEQ7_ZERO_SIGNAL_LEVEL;
@@ -363,7 +363,7 @@ void loop() {
         Serial.print(" ");
       }
       
-      Audiomath::mapVolumeToBoundedRange(lowByte(volume_out >> 4), volumeMap, 25);
+      Audiomath::mapVolumeToBoundedRange(lowByte(volume_out >> 4), volumeMap, sizeof(volumeMap));
       for(uint8_t k = 0; k < 25; k++) {
         Serial.print(volumeMap[k]);
         Serial.print(" ");
@@ -383,8 +383,7 @@ void loop() {
     audio_level = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
                                            spectrum.mean(levelRead, sizeof(levelRead)),
                                            MSGEQ7_ZERO_SIGNAL_LEVEL);
-
-    uint8_t vm_index = 255;
+    uint8_t vm_index = 0;
     if (feature_AGC_mode) {
       vm_index = Audiomath::getVolumeMapIndx(audio_level, dBLevels, sizeof(dBLevels));
     }
@@ -395,7 +394,12 @@ void loop() {
       Serial.print(" ");
       Serial.print(levelDebug[1]);
       Serial.print(" ");
-      Serial.print(vm_index);
+      if (feature_AGC_mode) {
+        Serial.print(volumeMap[vm_index]);
+      }
+      else {
+        Serial.print(0);
+      }
       Serial.print(" \n");
     #endif
   }

@@ -123,6 +123,9 @@ void Audiomath::mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[
   uint8_t b = MAX9744_MAXIMUM_VOL_LEVEL;
   int16_t gain_current_volume = MAX9744::getGainAtVolumeIndex(volume);
 
+  // reset the volume map index used by getVolumeMapIndx() to the default mid value
+  vm_index_previous = (DB_FAST_COEFFICIENT_COUNT >> 1);
+
   // find the upper and lower bounds for volume values
   if (volume != 0) {
     for(int16_t k = volume - 1; k >= 0; k--) {
@@ -173,14 +176,16 @@ void Audiomath::mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[
 uint8_t Audiomath::getVolumeMapIndx(const uint16_t audio_level, const uint16_t dBLevels[], 
                                     const size_t dBLevels_size) {
   // check dBLevels array is sized correctly, if not then return default mid-array index
-  if (dBLevels_size != (size_t)DB_FAST_COEFFICIENT_COUNT) {
-    return (uint8_t)(DB_FAST_COEFFICIENT_COUNT >> 1); 
+  // bit shift to account for dBLevels being uint16_t and sizeof() returning byte count
+  if (dBLevels_size != (size_t)(DB_FAST_COEFFICIENT_COUNT << 1)) {
+    return (uint8_t)(DB_FAST_COEFFICIENT_COUNT >> 1);
   }
   for (int8_t k = (DB_FAST_COEFFICIENT_COUNT - 1); k > 0; k--) {
     if (dBLevels[k] < audio_level) {
       if (abs(vm_index_previous - k) > 2) {
         vm_index_previous = k;
       }
+      break;
     }
   }
   return vm_index_previous;
