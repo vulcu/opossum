@@ -18,8 +18,8 @@
 
 // comment to deactivate varous debug modes
 //#define DEBUG_BM62_SERIAL
-#define DEBUG_LEVELOUT
-#define DEBUG_VOLUME
+//#define DEBUG_LEVELOUT
+//#define DEBUG_VOLUME
 
 // include libraries for PROGMEM, SLEEP, & I2C
 #include <avr/pgmspace.h>
@@ -44,6 +44,10 @@
 
 // declare built-in reset fuction at memory address 0
 void(* resetFunc) (void) = 0;
+
+// use these for pulsing the AGC LED when making automated volume changes
+int8_t  agc_ledpulse_counter = 0;
+uint8_t agc_vm_index_previous = (DB_FAST_COEFFICIENT_COUNT >> 1);
 
 // volume map index, filtered volume, raw volume, mean audio buffer level
 int16_t  volume_out  = 0;
@@ -321,6 +325,7 @@ void loop() {
         case feature_autovolume: {
           if (!feature_AGC_mode) {
             feature_AGC_mode = true;
+            ledbutton_SW2.brightness(S2_PWM_DEF);
 
             // recalculate the the relative dB levels based on most recent level reading
             Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
@@ -328,6 +333,7 @@ void loop() {
           }
           else {
             feature_AGC_mode = false;
+            ledbutton_SW2.off();
           }
         } break;
 
@@ -350,6 +356,9 @@ void loop() {
     if (feature_AGC_mode) {
       Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
       Audiomath::mapVolumeToBoundedRange(lowByte(volume_raw >> 4), volumeMap, sizeof(volumeMap));
+      ledbutton_SW2.brightness(S2_PWM_DEF);
+      agc_vm_index_previous = (DB_FAST_COEFFICIENT_COUNT >> 1);
+      agc_ledpulse_counter = 0;
     }
 
     #ifdef DEBUG_VOLUME
@@ -383,9 +392,36 @@ void loop() {
     audio_level = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
                                            spectrum.mean(levelRead, sizeof(levelRead)),
                                            MSGEQ7_ZERO_SIGNAL_LEVEL);
-    uint8_t vm_index = 0;
+
+    // if AGC enabled, map the audio_level to the current volume and adjust accordingly
     if (feature_AGC_mode) {
-      vm_index = Audiomath::getVolumeMapIndx(audio_level, dBLevels, sizeof(dBLevels));
+      uint8_t vm_index = Audiomath::getVolumeMapIndx(audio_level, dBLevels, sizeof(dBLevels));
+
+      // if the volume map index has changed then modify the amplifier volume
+      if (vm_index != agc_vm_index_previous) {
+        ledbutton_SW2.brightness(S2_PWM_DEF);
+        amplifier.volume(volumeMap[vm_index]);
+
+        // turn the LED on for 5 read intervals (defined by AUDIO_READ_INTERVAL_MILLISECONDS)
+        if (vm_index < agc_vm_index_previous) {
+          ledbutton_SW2.brightness(S2_PWM_MAX);
+        }
+        else {
+          ledbutton_SW2.brightness(S2_PWM_MIN);
+        }
+        agc_vm_index_previous = vm_index;
+        agc_ledpulse_counter = 5;
+      }
+      // if the volume map index hasn't changed, check to see if the LED timing counter is active
+      else if (agc_ledpulse_counter > 0) {
+        if (agc_ledpulse_counter > 1) {
+          agc_ledpulse_counter -= 1;
+        }
+        else {
+          ledbutton_SW2.brightness(S2_PWM_DEF); 
+          agc_ledpulse_counter = 0;
+        }
+      }
     }
 
     #ifdef DEBUG_LEVELOUT
@@ -395,6 +431,7 @@ void loop() {
       Serial.print(levelDebug[1]);
       Serial.print(" ");
       if (feature_AGC_mode) {
+        uint8_t vm_index = Audiomath::getVolumeMapIndx(audio_level, dBLevels, sizeof(dBLevels));
         Serial.print(volumeMap[vm_index]);
       }
       else {

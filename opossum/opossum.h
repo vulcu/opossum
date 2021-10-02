@@ -62,9 +62,9 @@
   #define S1_PWM_MIN (uint8_t)20          // S1 minimum PWM level
   #define S1_PWM_MAX (uint8_t)255         // S1 maximum PWM level
   #define S1_PWM_DEF (uint8_t)200         // S1 default PWM level
-  #define S2_PWM_MIN (uint8_t)20          // S2 minimum PWM level
+  #define S2_PWM_MIN (uint8_t)65          // S2 minimum PWM level
   #define S2_PWM_MAX (uint8_t)255         // S2 maximum PWM level
-  #define S2_PWM_DEF (uint8_t)200         // S2 default PWM level
+  #define S2_PWM_DEF (uint8_t)160         // S2 default PWM level
 
   // define two wire interface (I2C) clock rate
   #define TWI_CLOCK_RATE (int32_t)400000

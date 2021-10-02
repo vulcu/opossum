@@ -29,10 +29,10 @@ At present, the system will automatically connect to a device via bluetooth, pla
   2) ~~[double button press] turn automatic gain control on/off~~ _done_
   3) ~~[press and hold down] disconnect bluetooth and enter pairing mode~~ _done_
   4) ~~[press once, then press again and hold] enable/disable EQ preset~~ _done_
-* connect up the spectrum level detection algorithm to the amplifier volume control such that the first controls the second (_in progress_)
+* ~~connect up the spectrum level detection algorithm to the amplifier volume control such that the first controls the second~~ _done_
   * ~~the 'adjustment range' needs to be mapped to the available gain steps which exist relative to the present gain setting, since this varies~~ _done_
   * ~~this is also going to need some kind of hysterysis~~ _done_
-* automated gain adjustments should pulse the secondary front panel LED in the direction of the adjustment when they occur (`bright >> baseline >> bright` or `dim >> baseline >> dim`)
+* ~~ automated gain adjustments should pulse the secondary front panel LED in the direction of the adjustment when they occur (`bright >> baseline >> bright` or `dim >> baseline >> dim`)~~ _done_
 
 #### Status: This project is active development ####
 
