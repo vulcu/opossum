@@ -25,6 +25,7 @@
 #include <avr/pgmspace.h>
 #include <avr/wdt.h>
 
+// include *.cpp files here b/c Arduino IDE won't find them unless installed as a library
 #include "opossum/opossum.h"
 
 #include "opossum/ledbutton.h"
@@ -202,10 +203,6 @@ void waitForConnection(void) {
 
   // set the S1 LED brightness to the default 'on' value
   led_SW1.brightness(S1_PWM_DEF);
-
-  // wait 200 ms to help avoid BM62 missing UART reads
-  delay(200);
-  wdt_reset();  // reset the watchdog to prevent accidental system reboot
 }
 
 // configure and initialize the WDT along with the system hardware
@@ -243,7 +240,6 @@ void setup() {
 
   // wait for the BM62 to indicate a successful A2DP connection
   waitForConnection();
-  bluetooth.stop();
   
   // set initial MAX9744 amplifier volume parameter and unmute
   volume_out = analogRead(VOLUME);             // read Volume Control
@@ -280,7 +276,6 @@ void loop() {
   if (!bluetooth.isConnected()) {
     amplifier.mute();
     waitForConnection();  // wdt gets reset multiple times during function call
-    bluetooth.stop();
     amplifier.unmute();
   }
 
