@@ -19,6 +19,18 @@
 #include <avr/pgmspace.h>
 
 #include "audiomath.h"
+#include "MAX9744.h"
+
+#ifndef AUDIOMATH_AGC_BOUND_VALUES
+#define AUDIOMATH_AGC_BOUND_VALUES
+
+  // AGC range bounds and analysis step size (in 1/100ths of a dB)
+  // these values must be hardcoded to match `coeffecients_dB`
+  #define MILLIBEL_BOUND_LOWER (int16_t) -600
+  #define MILLIBEL_BOUND_UPPER (int16_t)  600
+  #define MILLIBEL_STEP_SIZE   (int16_t)  50
+
+#endif
 
 // index for keeping track of the buffer used by decayBuffer32
 uint8_t Audiomath::buffer_indx_32 = 0;

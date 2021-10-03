@@ -19,16 +19,8 @@
 #ifndef OPOSSUM_AUDIOMATH_H
 #define OPOSSUM_AUDIOMATH_H
 
-  #include "MAX9744.h"
-
   // array in PROGMEM for storing dB coefficients
   #define DB_FAST_COEFFICIENT_COUNT (uint8_t)25
-
-  // AGC range bounds and analysis step size (in 1/100ths of a dB)
-  // these values must be hardcoded to match `coeffecients_dB`
-  #define MILLIBEL_BOUND_LOWER (int16_t) -600
-  #define MILLIBEL_BOUND_UPPER (int16_t)  600
-  #define MILLIBEL_STEP_SIZE   (int16_t)  50
 
   class Audiomath {
     public:
