@@ -93,8 +93,8 @@ uint16_t Audiomath::decayBuffer32(uint16_t data_buffer[], const size_t buffer_si
         // there's probs no significant audio signal so don't update buffer
       }
       else {
-        // otherwise, decay the current value by approximately 16%
-        data_buffer[buffer_indx_32] = (data_buffer[buffer_indx_32] * 27L) >> 5;
+        // otherwise, decay the current value by approximately 9%
+        data_buffer[buffer_indx_32] = (data_buffer[buffer_indx_32] * 29L) >> 5;
       }
       buffer_indx_32++;
 
