@@ -352,11 +352,11 @@ void loop() {
 
     // recalculate the the relative dB levels based on most recent level reading
     if (feature_AGC_mode) {
+      ledbutton_SW2.brightness(S2_PWM_DEF);
+      agc_ledpulse_counter = 0;
+      agc_vm_index_previous = (DB_FAST_COEFFICIENT_COUNT >> 1);
       Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
       Audiomath::mapVolumeToBoundedRange(lowByte(volume_raw >> 4), volumeMap, sizeof(volumeMap));
-      ledbutton_SW2.brightness(S2_PWM_DEF);
-      agc_vm_index_previous = (DB_FAST_COEFFICIENT_COUNT >> 1);
-      agc_ledpulse_counter = 0;
     }
 
     #ifdef DEBUG_VOLUME
