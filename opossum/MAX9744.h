@@ -22,6 +22,9 @@
   #include <avr/pgmspace.h>
   #include <Wire.h>
 
+  // maximum volume level of the MAX9744 amplifier
+  #define MAX9744_MAXIMUM_VOL_LEVEL  (uint8_t)63
+
   class MAX9744 {
     private:
       bool invert_mute;

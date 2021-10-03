@@ -19,17 +19,34 @@
 #ifndef OPOSSUM_AUDIOMATH_H
 #define OPOSSUM_AUDIOMATH_H
 
+  #include "MAX9744.h"
+
+  // array in PROGMEM for storing dB coefficients
+  #define DB_FAST_COEFFICIENT_COUNT (uint8_t)25
+
+  // AGC range bounds and analysis step size (in 1/100ths of a dB)
+  // these values must be hardcoded to match `coeffecients_dB`
+  #define MILLIBEL_BOUND_LOWER (int16_t) -600
+  #define MILLIBEL_BOUND_UPPER (int16_t)  600
+  #define MILLIBEL_STEP_SIZE   (int16_t)  50
+
   class Audiomath {
     public:
       static void     convertVolumeToGain(const uint8_t start, const uint8_t stop, 
                                           int16_t values[], const size_t size);
       static void     dBFastRelativeLevel(uint16_t dBLevels[], const uint16_t baseLevel);
       static uint16_t decayBuffer32(uint16_t data_buffer[], const size_t buffer_size, 
-                                    uint16_t const data_mean, const uint16_t nominal_zero_signal_level);
+                                    uint16_t const data_mean, 
+                                    const uint16_t nominal_zero_signal_level);
       static void     mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[], 
                                               const size_t size_volumeMap);
       static uint8_t  getVolumeMapIndx(const uint16_t audio_level, const uint16_t dBLevels[], 
                                        const size_t dBLevels_size);
+    
+    private:
+      static uint8_t buffer_indx_32;
+      static uint8_t vm_index_previous;
+      static const uint16_t dB_fast_coefficient[DB_FAST_COEFFICIENT_COUNT] PROGMEM;
   };
 
 #endif
