@@ -249,14 +249,17 @@ void setup() {
   volume_out = analogRead(VOLUME);             // read Volume Control
   amplifier.volume(lowByte(volume_out >> 4));
   amplifier.unmute();
-  
-  // initialize levelBuf to nominal 'zero-signal' value
-  for (uint8_t k = 0; k < LEVEL_TRACK_BUFFER_SIZE; k++) {
-    levelBuf[k] = MSGEQ7_ZERO_SIGNAL_LEVEL;
-  }
-  
-  // read weighted audio level data, find mean, calculate buffer value
+
+  // read weighted audio level data from spectrum analyzer
   spectrum.read(levelRead, sizeof(levelRead));
+
+  // initialize levelBuf to initial audio level value
+  for (uint8_t k = 0; k < LEVEL_TRACK_BUFFER_SIZE; k++) {
+    uint16_t initial_signal_level = spectrum.mean(levelRead, sizeof(levelRead));
+    levelBuf[k] = initial_signal_level;
+  }
+
+  // calculate mean audio level from weighted data and update the level buffer
   audio_level = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
                                          spectrum.mean(levelRead, sizeof(levelRead)), 
                                          MSGEQ7_ZERO_SIGNAL_LEVEL);
