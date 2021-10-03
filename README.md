@@ -34,7 +34,7 @@ At present, the system will automatically connect to a device via bluetooth, pla
   * ~~this is also going to need some kind of hysterysis~~ _done_
 * ~~automated gain adjustments should pulse the secondary front panel LED in the direction of the adjustment when they occur (`bright >> baseline >> bright` or `dim >> baseline >> dim`)~~ _done_
 
-#### Status: This project is active development ####
+#### Status: This project is maintained but considered complete. Additional features will be incorporated into future designs, but are unlikely to be added to Opossum. ####
 
 ## ##
 (C) 2017-2021, Winry R. Litwa-Vulcu
