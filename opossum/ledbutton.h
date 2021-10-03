@@ -20,9 +20,6 @@
 #define LED_BUTTON_H
 
   class LED {
-    private:
-      int8_t led_pin;
-
     public:
       LED(int8_t led_pinAttachment);
 
@@ -32,14 +29,13 @@
       void off(void);
       void on(void);
       void reset(void);
+
+      private:
+      int8_t led_pin;
   };
 
 
   class Button {
-    private:    
-      const int8_t button_pin;
-      uint8_t button_port_input_mode;
-
     public:
       Button(uint8_t button_pinAttachment);
 
@@ -47,13 +43,14 @@
       void enableInputPullup(void);
       void init(void);
       bool read(void);
+
+      private:    
+      const int8_t button_pin;
+      uint8_t button_port_input_mode;
   };
 
 
   class LED_Button: public Button {
-    private:
-      LED led;
-
     public:
       LED_Button(int8_t button_pinAttachment, LED &led_Attachment);
     
@@ -64,6 +61,9 @@
       void init(void);
       void off(void);
       void unattach(void);
+
+    private:
+      LED led;
   };
 
 #endif

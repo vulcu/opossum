@@ -21,12 +21,8 @@
 #include "audiomath.h"
 #include "MAX9744.h"
 
-#ifndef OPOSSUM_AUDIOMATH_SYSTEM_PARAMETERS
-#define OPOSSUM_AUDIOMATH_SYSTEM_PARAMETERS
-
-  #define MAX9744_MAXIMUM_VOL_LEVEL  (uint8_t)63
-
-  #define DB_FAST_COEFFICIENT_COUNT (uint8_t)25
+#ifndef AUDIOMATH_AGC_BOUND_VALUES
+#define AUDIOMATH_AGC_BOUND_VALUES
 
   // AGC range bounds and analysis step size (in 1/100ths of a dB)
   // these values must be hardcoded to match `coeffecients_dB`
@@ -37,13 +33,13 @@
 #endif
 
 // index for keeping track of the buffer used by decayBuffer32
-static uint8_t audiomath_buffer_indx_32 = 0;
+uint8_t Audiomath::buffer_indx_32 = 0;
 
 // index for keeping track of the most recent Volume Map index
-static uint8_t audiomath_vm_index_previous = (DB_FAST_COEFFICIENT_COUNT >> 1);
+uint8_t Audiomath::vm_index_previous = (DB_FAST_COEFFICIENT_COUNT >> 1);
 
 // Coefficient table for fast dB approximations
-static const uint16_t audiomath_dB_fast_coefficient[DB_FAST_COEFFICIENT_COUNT] PROGMEM =
+const uint16_t Audiomath::dB_fast_coefficient[DB_FAST_COEFFICIENT_COUNT] PROGMEM =
 {
   2053, 2175, 2303, 2440, 2584,
   2738, 2900, 3072, 3254, 3446,
@@ -55,7 +51,7 @@ static const uint16_t audiomath_dB_fast_coefficient[DB_FAST_COEFFICIENT_COUNT] P
 // update the relative dB level bands using currently defined volume level
 void Audiomath::dBFastRelativeLevel(uint16_t dBLevels[], const uint16_t baseLevel) {
   for(uint8_t k = 0; k < DB_FAST_COEFFICIENT_COUNT; k++) {
-    dBLevels[k] = ((uint32_t)baseLevel * pgm_read_word(&(audiomath_dB_fast_coefficient[k]))) >> 12;
+    dBLevels[k] = ((uint32_t)baseLevel * pgm_read_word(&(dB_fast_coefficient[k]))) >> 12;
   }
 }
 
@@ -84,13 +80,13 @@ uint16_t Audiomath::decayBuffer32(uint16_t data_buffer[], const size_t buffer_si
       return (uint16_t)0;
     }
     else {
-      if (audiomath_buffer_indx_32 >= 32) {
-        audiomath_buffer_indx_32 = 0;
+      if (buffer_indx_32 >= 32) {
+        buffer_indx_32 = 0;
       }
-      if (data_mean > data_buffer[audiomath_buffer_indx_32]) {
+      if (data_mean > data_buffer[buffer_indx_32]) {
         // if the new value is greater, use value halfway between old and new
-        data_buffer[audiomath_buffer_indx_32] = data_buffer[audiomath_buffer_indx_32] +
-          ((data_mean - data_buffer[audiomath_buffer_indx_32]) >> 1);
+        data_buffer[buffer_indx_32] = data_buffer[buffer_indx_32] +
+          ((data_mean - data_buffer[buffer_indx_32]) >> 1);
       }
       else if (data_mean < ((nominal_zero_signal_level * (uint16_t)18) >> 4)) {
         // if the latest level is less a small % over the nominal zero signal,
@@ -98,9 +94,9 @@ uint16_t Audiomath::decayBuffer32(uint16_t data_buffer[], const size_t buffer_si
       }
       else {
         // otherwise, decay the current value by approximately 16%
-        data_buffer[audiomath_buffer_indx_32] = (data_buffer[audiomath_buffer_indx_32] * 27L) >> 5;
+        data_buffer[buffer_indx_32] = (data_buffer[buffer_indx_32] * 27L) >> 5;
       }
-      audiomath_buffer_indx_32++;
+      buffer_indx_32++;
 
       // calculate total sum of exponential buffer array
       uint32_t sum = 0;
@@ -124,7 +120,7 @@ void Audiomath::mapVolumeToBoundedRange(const uint8_t volume, uint8_t volumeMap[
   int16_t gain_current_volume = MAX9744::getGainAtVolumeIndex(volume);
 
   // reset the volume map index used by getVolumeMapIndx() to the default mid value
-  audiomath_vm_index_previous = (DB_FAST_COEFFICIENT_COUNT >> 1);
+  vm_index_previous = (DB_FAST_COEFFICIENT_COUNT >> 1);
 
   // find the upper and lower bounds for volume values
   if (volume != 0) {
@@ -182,11 +178,11 @@ uint8_t Audiomath::getVolumeMapIndx(const uint16_t audio_level, const uint16_t d
   }
   for (int8_t k = (DB_FAST_COEFFICIENT_COUNT - 1); k >= 0; k--) {
     if (dBLevels[k] < audio_level) {
-      if (abs(audiomath_vm_index_previous - k) > 1) {
-        audiomath_vm_index_previous = k;
+      if (abs(vm_index_previous - k) > 1) {
+        vm_index_previous = k;
       }
       break;
     }
   }
-  return audiomath_vm_index_previous;
+  return vm_index_previous;
 }

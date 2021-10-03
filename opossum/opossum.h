@@ -41,7 +41,7 @@
   // control input pullup for analog pin measuring MSGEQ7 'DCOUT' value
   #define MSGEQ7_INPUT_PULLUP_ON_DC_OUT false
   #define MSGEQ7_SIGNAL_BAND_COUNT      (uint8_t)7
-  #define MSGEQ7_ZERO_SIGNAL_LEVEL      (uint16_t)300
+  #define MSGEQ7_ZERO_SIGNAL_LEVEL      (uint16_t)400
 
   // array size in samples of the level tracking buffer
   #define LEVEL_TRACK_BUFFER_SIZE       (uint16_t)32

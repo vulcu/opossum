@@ -20,18 +20,18 @@
 #define MSGEQ7_H
 
   class MSGEQ7 {
-    private:
-      bool    isInputPullup;
-      uint8_t dc_out;
-      uint8_t reset_p;
-      uint8_t strobe_p;
-
     public:
       MSGEQ7(uint8_t strobe_p, uint8_t dc_out, uint8_t reset_p, bool isInputPullup);
 
       void     init(void);
       uint16_t mean(uint16_t array_values[], const size_t array_size);
       void     read(uint16_t array_values[], const size_t array_size);
+
+    private:
+      bool    isInputPullup;
+      uint8_t dc_out;
+      uint8_t reset_p;
+      uint8_t strobe_p;
   };
 
 #endif

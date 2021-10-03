@@ -20,7 +20,7 @@
 
 // MAX9744 amplifier gain levels (dB), stored as milli-Bells 
 // (1/100 of a dB) to allow PROGMEM storage as an int type
-static const int16_t MAX9744Gain_milliBels[64] PROGMEM = 
+const int16_t MAX9744::MAX9744Gain_milliBels[64] PROGMEM = 
 {
   -10950,  -9290,   -9030,   -8680,
   -8430,   -8080,   -7830,   -7470,

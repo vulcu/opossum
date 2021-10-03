@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// comment to deactivate varous debug modes
+// comment to deactivate various debug modes
 //#define DEBUG_BM62_SERIAL
 //#define DEBUG_LEVELOUT
 //#define DEBUG_VOLUME
@@ -33,17 +33,21 @@
 #include "opossum/BM62.h"
 #include "opossum/BM62.cpp"
 
-#include "opossum/audiomath.h"
-#include "opossum/audiomath.cpp"
-
 #include "opossum/MAX9744.h"
 #include "opossum/MAX9744.cpp"
+
+#include "opossum/audiomath.h"
+#include "opossum/audiomath.cpp"
 
 #include "opossum/MSGEQ7.h"
 #include "opossum/MSGEQ7.cpp"
 
 // declare built-in reset fuction at memory address 0
 void(* resetFunc) (void) = 0;
+
+// for tracking automatic gain control and EQ mode feature states
+bool feature_AGC_mode = false;
+bool feature_EQ_mode  = false;
 
 // use these for pulsing the AGC LED when making automated volume changes
 int8_t  agc_ledpulse_counter = 0;
@@ -60,9 +64,8 @@ uint16_t levelRead[MSGEQ7_SIGNAL_BAND_COUNT];
 uint16_t levelBuf[LEVEL_TRACK_BUFFER_SIZE];
 uint16_t dBLevels[DB_FAST_COEFFICIENT_COUNT];
 
-// for tracking automatic gain control and EQ mode feature states
-bool feature_AGC_mode = false;
-bool feature_EQ_mode  = false;
+// time of most recent audio level read (rolls over after about 50 days)
+uint32_t previousMillis = 0;
 
 // correlates to the number of switch state transitions registered [0, 1, 2, 3, or 4]
 enum feature 
@@ -73,9 +76,6 @@ enum feature
   feature_equalizer,
   feature_autovolume
 };
-
-// time of most recent audio level read (rolls over after about 50 days)
-uint32_t previousMillis = 0;
 
 // S2 interrupt debounce and timer values
 volatile bool     S2_button_read_ACTIVE       = false;
@@ -249,14 +249,17 @@ void setup() {
   volume_out = analogRead(VOLUME);             // read Volume Control
   amplifier.volume(lowByte(volume_out >> 4));
   amplifier.unmute();
-  
-  // initialize levelBuf to nominal 'zero-signal' value
-  for (uint8_t k = 0; k < LEVEL_TRACK_BUFFER_SIZE; k++) {
-    levelBuf[k] = MSGEQ7_ZERO_SIGNAL_LEVEL;
-  }
-  
-  // read weighted audio level data, find mean, calculate buffer value
+
+  // read weighted audio level data from spectrum analyzer
   spectrum.read(levelRead, sizeof(levelRead));
+
+  // initialize levelBuf to initial audio level value
+  for (uint8_t k = 0; k < LEVEL_TRACK_BUFFER_SIZE; k++) {
+    uint16_t initial_signal_level = spectrum.mean(levelRead, sizeof(levelRead));
+    levelBuf[k] = initial_signal_level;
+  }
+
+  // calculate mean audio level from weighted data and update the level buffer
   audio_level = Audiomath::decayBuffer32(levelBuf, LEVEL_TRACK_BUFFER_SIZE,
                                          spectrum.mean(levelRead, sizeof(levelRead)), 
                                          MSGEQ7_ZERO_SIGNAL_LEVEL);

@@ -22,14 +22,10 @@
   #include <avr/pgmspace.h>
   #include <Wire.h>
 
-  class MAX9744 {
-    private:
-      bool invert_mute;
-      uint8_t i2c_addr;
-      uint8_t mute_p;
-      uint8_t shutdown_n;
-      TwoWire* wire;
+  // maximum volume level of the MAX9744 amplifier
+  #define MAX9744_MAXIMUM_VOL_LEVEL  (uint8_t)63
 
+  class MAX9744 {
     public:
       MAX9744(uint8_t i2c_addr, uint8_t mute_p, uint8_t shutdown_n, TwoWire* wire);
 
@@ -42,6 +38,14 @@
       void volume(const uint8_t value);
 
       static inline int16_t getGainAtVolumeIndex(const uint8_t index);
+
+    private:
+      bool invert_mute;
+      uint8_t i2c_addr;
+      uint8_t mute_p;
+      uint8_t shutdown_n;
+      static const int16_t MAX9744Gain_milliBels[64] PROGMEM;
+      TwoWire* wire;
   };
 
 #endif
