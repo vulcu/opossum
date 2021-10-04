@@ -61,7 +61,7 @@
   // min, max, and default 'on' LED brightness values for each switch LED
   #define S1_PWM_MIN (uint8_t)20          // S1 minimum PWM level
   #define S1_PWM_MAX (uint8_t)255         // S1 maximum PWM level
-  #define S1_PWM_DEF (uint8_t)200         // S1 default PWM level
+  #define S1_PWM_DEF (uint8_t)130         // S1 default PWM level
   #define S2_PWM_MIN (uint8_t)65          // S2 minimum PWM level
   #define S2_PWM_MAX (uint8_t)255         // S2 maximum PWM level
   #define S2_PWM_DEF (uint8_t)160         // S2 default PWM level
