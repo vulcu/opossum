@@ -18,7 +18,7 @@ This project is a basis for a bluetooth stereo audio amplifier with a spetral-ba
 A bluetooth-connected amplifier utilizing a microcontroller continuously analyzing the audio spectrum and adjusting the playback amplifier volume accordingly, solves the issue!
 
 ## Features ##
-At present, the system will automatically connect to a device via bluetooth, play audio from that device, reestablish a lost connection, control the amplifier volume manually, read and process audio levels from the MSGEQ7, determine relative dB levels for audio data and automatically recalculate those levels when the volume is manually adjusted. It will use that data to build a volume map of audio levels against nearby amplifier volume steps, make automated gain adjustments, and will indicate via the front panel when and in what direction an adjustment was made.
+At present, the system will automatically connect to a device via bluetooth, play audio from that device, reestablish a lost connection, control the amplifier volume manually, read and process audio levels from the MSGEQ7, determine relative dB levels for audio data and automatically recalculate those levels when the volume is manually adjusted. It will use that data to build a volume map of audio levels against nearby amplifier volume steps, make automated gain adjustments, and indicate via the front panel when and in what direction an adjustment was made.
 
 #### Remaining Work ####
 * ~~move some remaining functions out of main file~~ _complete_
