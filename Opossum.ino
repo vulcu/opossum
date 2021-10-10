@@ -24,6 +24,7 @@
 // include libraries for PROGMEM, SLEEP, & I2C
 #include <avr/pgmspace.h>
 #include <avr/wdt.h>
+#include <EEPROM.h>
 
 // include *.cpp files here b/c Arduino IDE won't find them unless installed as a library
 #include "opossum/opossum.h"
