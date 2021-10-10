@@ -22,6 +22,13 @@
   // define the MAX9744 I2C address, default is 0x4B
   #define MAX9744_I2CADDR ((uint8_t)0x4B)
 
+  // EEPROM Memory Address for storing AGC and EQ state between power cycles
+  #define EEPROM_ADDR_FEATURE_STATE (int16_t)0x0010
+
+  // EEPROM Bit Masks for storing AGC and EQ state between power cycles
+  #define BM_AGC_STATE (uint8_t)0b00000001
+  #define BM_EQ_STATE  (uint8_t)0b00000010
+
   // define the digitalOut pins according to the schematic net name
   #define S2_PIN       (uint8_t)3
   #define IND_A2DP_N   (uint8_t)4

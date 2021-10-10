@@ -33,6 +33,7 @@ At present, the system will automatically connect to a device via bluetooth, pla
   * ~~the 'adjustment range' needs to be mapped to the available gain steps which exist relative to the present gain setting, since this varies~~ _done_
   * ~~this is also going to need some kind of hysterysis~~ _done_
 * ~~automated gain adjustments should pulse the secondary front panel LED in the direction of the adjustment when they occur (`bright >> baseline >> bright` or `dim >> baseline >> dim`)~~ _done_
+* add EEPROM storage functionality for maintaining enabled/disabled state of AGC and EQ between power cycles
 
 #### Status: This project is maintained but considered complete. Additional features will be incorporated into future designs, but are unlikely to be added to Opossum. ####
 
