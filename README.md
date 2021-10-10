@@ -1,5 +1,5 @@
 # Opossum - Bluetooth Stereo Amplifier #
-A bluetooth-based amplifier with automatic gain control, written primarily in Arduino/AVR C for a specific hardware platform comprised of:
+A bluetooth-based amplifier with automatic gain control, written in C++ and Arduino/AVR C for a specific hardware platform comprised of:
   * [ATmega328-compatible microcontroller](https://www.microchip.com/wwwproducts/en/ATmega328)
   * [Microchip BM62 Bluetooth module](https://www.microchip.com/wwwproducts/en/BM62)
   * [MSGEQ7 spectrum level detector](https://www.sparkfun.com/datasheets/Components/General/MSGEQ7.pdf)
