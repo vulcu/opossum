@@ -264,6 +264,20 @@ void setup() {
   // initialize base volume level and relative dB values
   Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
 
+  if ((bool)(EEPROM.read(EEPROM_ADDR_FEATURE_STATE) & BM_EQ_STATE)) {
+    feature_EQ_mode = true;
+    bluetooth.setEqualizerPreset(bluetooth.EQ_Classical);
+  }
+  if ((bool)(EEPROM.read(EEPROM_ADDR_FEATURE_STATE) & BM_AGC_STATE)) {
+    feature_AGC_mode = true;
+
+    // recalculate the the relative dB levels based on most recent level reading
+    Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
+    Audiomath::mapVolumeToBoundedRange(lowByte(volume_out >> 4), volumeMap, sizeof(volumeMap));
+
+    // set SW2 LED to default brightness to indicate that the AGC function is enabled
+    ledbutton_SW2.brightness(S2_PWM_DEF);
+  }
   // SW2 interrupt will often glitch and count when first enabled, so reset this here
   // (after establishing BT connection which gives us a delay) without checking it
   S2_interrupt_state_COUNT = 0;
@@ -311,12 +325,20 @@ void loop() {
         // enable/disable an equalizer preset within the bluetooth module DSP
         case feature_equalizer: {
           if (!feature_EQ_mode) {
-            bluetooth.setEqualizerPreset(bluetooth.EQ_Classical);
             feature_EQ_mode = true;
+            bluetooth.setEqualizerPreset(bluetooth.EQ_Classical);
+
+            // update EQ enable/disable state stored in EEPROM
+            uint8_t feature_state = (uint8_t)EEPROM.read(EEPROM_ADDR_FEATURE_STATE);
+            EEPROM.update(EEPROM_ADDR_FEATURE_STATE, (int16_t)(feature_state | BM_EQ_STATE));
           }
           else {
-            bluetooth.setEqualizerPreset(bluetooth.EQ_Off);
             feature_EQ_mode = false;
+            bluetooth.setEqualizerPreset(bluetooth.EQ_Off);
+
+            // update EQ enable/disable state stored in EEPROM
+            uint8_t feature_state = (uint8_t)EEPROM.read(EEPROM_ADDR_FEATURE_STATE);
+            EEPROM.update(EEPROM_ADDR_FEATURE_STATE, (int16_t)(feature_state & ~BM_EQ_STATE));
           }
         } break;
 
@@ -324,14 +346,25 @@ void loop() {
         case feature_autovolume: {
           if (!feature_AGC_mode) {
             feature_AGC_mode = true;
-            ledbutton_SW2.brightness(S2_PWM_DEF);
+
+            // update AGC enable/disable state stored in EEPROM
+            uint8_t feature_state = (uint8_t)EEPROM.read(EEPROM_ADDR_FEATURE_STATE);
+            EEPROM.update(EEPROM_ADDR_FEATURE_STATE, (int16_t)(feature_state | BM_AGC_STATE));
 
             // recalculate the the relative dB levels based on most recent level reading
             Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
             Audiomath::mapVolumeToBoundedRange(lowByte(volume_out >> 4), volumeMap, sizeof(volumeMap));
+
+            // set SW2 LED to default brightness to indicate that the AGC function is enabled
+            ledbutton_SW2.brightness(S2_PWM_DEF);
           }
           else {
             feature_AGC_mode = false;
+            // update AGC enable/disable state stored in EEPROM
+            uint8_t feature_state = (uint8_t)EEPROM.read(EEPROM_ADDR_FEATURE_STATE);
+            EEPROM.update(EEPROM_ADDR_FEATURE_STATE, (int16_t)(feature_state & ~BM_AGC_STATE));
+
+            // set SW2 LED to off to indicate that the AGC function is disabled
             ledbutton_SW2.off();
           }
         } break;
