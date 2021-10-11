@@ -264,6 +264,20 @@ void setup() {
   // initialize base volume level and relative dB values
   Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
 
+/*
+  // By default all EEPROM registers are initialized to 0xFF, so if the address in question is
+  // equal to 0xFF then initialize it to 0x00 and modify the register at 0x00 to reflect this
+  // by setting the LSB to 0
+  if ((EEPROM.read(EEPROM_ADDR_INIT) & EEPROM_ADDR_FEATURE_STATE) == EEPROM_ADDR_FEATURE_STATE){
+    EEPROM.update(EEPROM_ADDR_FEATURE_STATE, (int16_t)0x00);
+    EEPROM.update(EEPROM_ADDR_INIT, (EEPROM.read(EEPROM_ADDR_INIT) & ~EEPROM_ADDR_FEATURE_STATE));
+  }
+*/
+// delete this, one-time only code for resetting the EEPROM registers
+for (int k = 0; k <= 255; k++) {
+  EEPROM.update(k, 0xFF);
+}
+
   if ((bool)(EEPROM.read(EEPROM_ADDR_FEATURE_STATE) & BM_EQ_STATE)) {
     feature_EQ_mode = true;
     bluetooth.setEqualizerPreset(bluetooth.EQ_Classical);
@@ -278,6 +292,7 @@ void setup() {
     // set SW2 LED to default brightness to indicate that the AGC function is enabled
     ledbutton_SW2.brightness(S2_PWM_DEF);
   }
+
   // SW2 interrupt will often glitch and count when first enabled, so reset this here
   // (after establishing BT connection which gives us a delay) without checking it
   S2_interrupt_state_COUNT = 0;
