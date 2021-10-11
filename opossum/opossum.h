@@ -20,8 +20,13 @@
 #define OPOSSUM_H
 
   // define the MAX9744 I2C address, default is 0x4B
-  #define MAX9744_I2CADDR ((uint8_t)0x4B)
-
+  #define MAX9744_I2CADDR  (uint8_t)0x4B
+/*
+  // EEPROM Memory Address for storing the initialization state of EEPROM registers
+  #define EEPROM_ADDR_INIT (int16_t)0x00
+  #define EEPROM_BIT_INIT_FEATURE_STATE (int16_t)0x00
+  #define EEPROM_BIT_INIT_FEATURE_STATE (int16_t)0x00
+*/
   // EEPROM Memory Address for storing AGC and EQ state between power cycles
   #define EEPROM_ADDR_FEATURE_STATE (int16_t)0x0010
 
