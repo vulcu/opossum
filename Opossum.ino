@@ -20,6 +20,7 @@
 //#define DEBUG_BM62_SERIAL
 //#define DEBUG_LEVELOUT
 //#define DEBUG_VOLUME
+//#define DEBUG_EEPROM_RESET
 
 // include libraries for PROGMEM, SLEEP, & I2C
 #include <avr/pgmspace.h>
@@ -264,7 +265,13 @@ void setup() {
   // initialize base volume level and relative dB values
   Audiomath::dBFastRelativeLevel(dBLevels, audio_level);
 
-/*
+  // use this to reset the EEPROM registers to their default value (debug only!)
+  #ifdef DEBUG_EEPROM_RESET
+    for (int k = 0; k <= 255; k++) {
+      EEPROM.update(k, 0xFF);
+    }
+  #endif
+
   // By default all EEPROM registers are initialized to 0xFF, so if the address in question is
   // equal to 0xFF then initialize it to 0x00 and modify the register at 0x00 to reflect this
   // by setting the LSB to 0
