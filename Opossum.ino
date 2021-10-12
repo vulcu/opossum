@@ -279,7 +279,6 @@ void setup() {
     EEPROM.update(EEPROM_ADDR_INIT_REG_0, 
                  ((uint8_t)EEPROM.read(EEPROM_ADDR_INIT_REG_0) & (uint8_t)(~BM_INIT_REG_FEATURE)));
   }
-  
 
   if ((bool)(EEPROM.read(EEPROM_ADDR_FEATURE_STATE) & BM_EQ_STATE)) {
     feature_EQ_mode = true;
@@ -378,6 +377,7 @@ void loop() {
           }
           else {
             feature_AGC_mode = false;
+
             // update AGC enable/disable state stored in EEPROM
             uint8_t feature_state = (uint8_t)EEPROM.read(EEPROM_ADDR_FEATURE_STATE);
             EEPROM.update(EEPROM_ADDR_FEATURE_STATE, (int16_t)(feature_state & ~BM_AGC_STATE));
