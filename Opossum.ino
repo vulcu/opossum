@@ -273,17 +273,13 @@ void setup() {
   #endif
 
   // By default all EEPROM registers are initialized to 0xFF, so if the address in question is
-  // equal to 0xFF then initialize it to 0x00 and modify the register at 0x00 to reflect this
-  // by setting the LSB to 0
-  if ((EEPROM.read(EEPROM_ADDR_INIT) & EEPROM_ADDR_FEATURE_STATE) == EEPROM_ADDR_FEATURE_STATE){
+  // equal to 0xFF then initialize it to 0x00 and modify the init register at 0x00 to reflect this
+  if (((uint8_t)EEPROM.read(EEPROM_ADDR_INIT_REG_0) & BM_INIT_REG_FEATURE) == BM_INIT_REG_FEATURE){
     EEPROM.update(EEPROM_ADDR_FEATURE_STATE, (int16_t)0x00);
-    EEPROM.update(EEPROM_ADDR_INIT, (EEPROM.read(EEPROM_ADDR_INIT) & ~EEPROM_ADDR_FEATURE_STATE));
+    EEPROM.update(EEPROM_ADDR_INIT_REG_0, 
+                 ((uint8_t)EEPROM.read(EEPROM_ADDR_INIT_REG_0) & (uint8_t)(~BM_INIT_REG_FEATURE)));
   }
-*/
-// delete this, one-time only code for resetting the EEPROM registers
-for (int k = 0; k <= 255; k++) {
-  EEPROM.update(k, 0xFF);
-}
+  
 
   if ((bool)(EEPROM.read(EEPROM_ADDR_FEATURE_STATE) & BM_EQ_STATE)) {
     feature_EQ_mode = true;
