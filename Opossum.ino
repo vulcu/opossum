@@ -448,12 +448,12 @@ void loop() {
       uint8_t vm_index = Audiomath::getVolumeMapIndx(audio_level, dBLevels, sizeof(dBLevels));
 
       // if the volume map index has changed then modify the amplifier volume
-      if (vm_index != agc_vm_index_previous) {
+      if (volumeMap[vm_index] != volumeMap[agc_vm_index_previous]) {
         ledbutton_SW2.brightness(S2_PWM_DEF);
         amplifier.volume(volumeMap[vm_index]);
 
         // turn the LED on for 5 read intervals (defined by AUDIO_READ_INTERVAL_MILLISECONDS)
-        if (vm_index < agc_vm_index_previous) {
+        if (volumeMap[vm_index] > volumeMap[agc_vm_index_previous]) {
           ledbutton_SW2.brightness(S2_PWM_MAX);
         }
         else {
