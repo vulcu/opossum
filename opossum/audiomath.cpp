@@ -177,8 +177,14 @@ uint8_t Audiomath::getVolumeMapIndx(const uint16_t audio_level, const uint16_t d
     return (uint8_t)(DB_FAST_COEFFICIENT_COUNT >> 1);
   }
   for (int8_t k = (DB_FAST_COEFFICIENT_COUNT - 1); k >= 0; k--) {
-    if (dBLevels[k] < audio_level) {
+    if ((dBLevels[k] <= audio_level) | (k < 1)) {
       if (abs(vm_index_previous - k) > 1) {
+        vm_index_previous = ((vm_index_previous < k) ? 
+                             (vm_index_previous + 1) : 
+                             (vm_index_previous - 1));
+      }
+      else if (((vm_index_previous < 2) & (k < vm_index_previous)) |
+               ((vm_index_previous > 22) & (k > vm_index_previous))){
         vm_index_previous = k;
       }
       break;
